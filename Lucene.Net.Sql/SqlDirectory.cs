@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using Lucene.Net.Store;
 
-namespace Lucine.Net.Sql
+namespace Lucene.Net.Sql
 {
     /// <summary>
     /// An abstraction layer
-    /// to store Lucine index
+    /// to store Lucene index
     /// files inside SQL Database.
     /// </summary>
     public sealed class SqlDirectory : BaseDirectory

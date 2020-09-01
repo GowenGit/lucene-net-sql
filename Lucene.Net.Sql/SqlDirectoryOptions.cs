@@ -1,4 +1,4 @@
-﻿namespace Lucine.Net.Sql
+﻿namespace Lucene.Net.Sql
 {
     public class SqlDirectoryOptions
     {

@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucine.Net.Sql", "Lucine.Net.Sql\Lucine.Net.Sql.csproj", "{77EA4ACF-3125-422E-9F66-B163CE6F999C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucene.Net.Sql", "Lucene.Net.Sql\Lucene.Net.Sql.csproj", "{77EA4ACF-3125-422E-9F66-B163CE6F999C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucine.Net.Sql.Tests", "Lucine.Net.Sql.Tests\Lucine.Net.Sql.Tests.csproj", "{3734271B-D0E1-4D5E-89EB-E1EB1D8753F9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucene.Net.Sql.Tests", "Lucene.Net.Sql.Tests\Lucene.Net.Sql.Tests.csproj", "{3734271B-D0E1-4D5E-89EB-E1EB1D8753F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

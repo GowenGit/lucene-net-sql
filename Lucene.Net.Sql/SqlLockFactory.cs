@@ -1,7 +1,7 @@
 ﻿using System;
 using Lucene.Net.Store;
 
-namespace Lucine.Net.Sql
+namespace Lucene.Net.Sql
 {
     internal class SqlLockFactory : LockFactory
     {

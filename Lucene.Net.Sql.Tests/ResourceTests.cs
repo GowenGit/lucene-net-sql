@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using Xunit;
 
-namespace Lucine.Net.Sql.Tests
+namespace Lucene.Net.Sql.Tests
 {
     public class ResourceTests
     {
@@ -18,7 +18,7 @@ namespace Lucine.Net.Sql.Tests
         [Fact]
         public void Load_WhenCalled_ShouldLoadString()
         {
-            const string name = "Lucine.Net.Sql.Schema.init_mysql.sql";
+            const string name = "Lucene.Net.Sql.Schema.init_mysql.sql";
 
             var assembly = typeof(SqlDirectory).Assembly;
 
