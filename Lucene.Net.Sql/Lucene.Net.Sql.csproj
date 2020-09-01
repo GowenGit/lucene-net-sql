@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -20,6 +20,9 @@
 
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <LangVersion>8.0</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,10 +36,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="MySql\" />
+    <EmbeddedResource Include="Schema\*" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Schema\*" />
+    <None Remove="Schema\purge_mysql.sql" />
   </ItemGroup>
 </Project>

@@ -1,26 +1,49 @@
-﻿namespace Lucene.Net.Sql
+﻿using System;
+
+namespace Lucene.Net.Sql
 {
     public class SqlDirectoryOptions
     {
         /// <summary>
-        /// Gets or sets SQL block size in bytes.
+        /// Gets SQL block size in bytes.
         /// </summary>
-        public int BlockSize { get; set; } = 8192;
+        public int BlockSize { get; }
 
         /// <summary>
-        /// Gets or sets SQL engine type.
+        /// Gets SQL engine type.
         /// </summary>
-        public SqlDirectoryEngine SqlDirectoryEngine { get; set; } = SqlDirectoryEngine.MySql;
+        public SqlDirectoryEngine SqlDirectoryEngine { get; }
 
         /// <summary>
-        /// Gets or sets database connection string.
+        /// Gets database connection string.
         /// </summary>
-        public string ConnectionString { get; set; } = string.Empty;
+        public string ConnectionString { get; }
 
         /// <summary>
-        /// Gets or sets directory file name.
+        /// Gets directory file name.
         /// </summary>
-        public string DirectoryName { get; set; } = string.Empty;
+        public string DirectoryName { get; }
+
+        public SqlDirectoryOptions(
+            SqlDirectoryEngine engineType,
+            string connectionString,
+            string directoryName,
+            int blockSize = 8192)
+        {
+            SqlDirectoryEngine = engineType;
+
+            ConnectionString = !string.IsNullOrWhiteSpace(connectionString)
+                ? connectionString :
+                  throw new ArgumentException("Argument can not be null or empty", nameof(connectionString));
+
+            DirectoryName = !string.IsNullOrWhiteSpace(directoryName)
+                ? directoryName :
+                throw new ArgumentException("Argument can not be null or empty", nameof(directoryName));
+
+            BlockSize = blockSize > 1023
+                ? blockSize :
+                throw new ArgumentException("Argument can not be less than 1024", nameof(blockSize));
+        }
     }
 
     public enum SqlDirectoryEngine

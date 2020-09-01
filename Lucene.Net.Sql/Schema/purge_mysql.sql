@@ -1,0 +1,7 @@
+﻿BEGIN;
+
+DROP TABLE IF EXISTS `{0}_data_blocks`;
+DROP TABLE IF EXISTS `{0}_inodes`;
+DROP TABLE IF EXISTS `{0}_locks`;
+
+COMMIT;

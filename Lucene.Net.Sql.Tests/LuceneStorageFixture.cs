@@ -14,11 +14,7 @@ namespace Lucene.Net.Sql.Tests
     {
         public LuceneStorageFixture()
         {
-            var options = new SqlDirectoryOptions
-            {
-                DirectoryName = "TestDirectory",
-                ConnectionString = "..."
-            };
+            var options = new SqlDirectoryOptions(SqlDirectoryEngine.MySql, "...", "TestDirectory");
 
             const LuceneVersion appLuceneVersion = LuceneVersion.LUCENE_48;
 

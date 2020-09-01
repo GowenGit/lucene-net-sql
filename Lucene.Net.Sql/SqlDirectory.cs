@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Lucene.Net.Sql.Operators;
 using Lucene.Net.Store;
 
 namespace Lucene.Net.Sql
@@ -11,9 +12,13 @@ namespace Lucene.Net.Sql
     /// </summary>
     public sealed class SqlDirectory : BaseDirectory
     {
+        private readonly IOperator _operator;
+
         public SqlDirectory(SqlDirectoryOptions options)
         {
-            var lockFactory = new SqlLockFactory();
+            _operator = OperatorFactory.Create(options);
+
+            var lockFactory = new SqlLockFactory(_operator, options);
 
             SetLockFactory(lockFactory);
         }
@@ -21,36 +26,30 @@ namespace Lucene.Net.Sql
         /// <inheritdoc/>
         public override string[] ListAll()
         {
-            throw new System.NotImplementedException();
+            return _operator.ListNodes();
         }
 
         /// <inheritdoc/>
         [Obsolete("this method will be removed in 5.0")]
         public override bool FileExists(string name)
         {
-            throw new System.NotImplementedException();
+            return _operator.GetNode(name) != null;
         }
 
         /// <inheritdoc/>
         public override void DeleteFile(string name)
         {
-            throw new System.NotImplementedException();
+            _operator.RemoveNode(name);
         }
 
         /// <inheritdoc/>
         public override long FileLength(string name)
         {
-            throw new System.NotImplementedException();
+            return _operator.GetNode(name)?.Size ?? 0;
         }
 
         /// <inheritdoc/>
         public override IndexOutput CreateOutput(string name, IOContext context)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        /// <inheritdoc/>
-        public override void Sync(ICollection<string> names)
         {
             throw new System.NotImplementedException();
         }
@@ -62,9 +61,16 @@ namespace Lucene.Net.Sql
         }
 
         /// <inheritdoc/>
+        /// Not used since we sync during Flush operations.
+        public override void Sync(ICollection<string> names) { }
+
+        /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
-            throw new System.NotImplementedException();
+            if (disposing)
+            {
+                _operator.Dispose();
+            }
         }
     }
 }
