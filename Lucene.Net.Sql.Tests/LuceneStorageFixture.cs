@@ -1,5 +1,8 @@
 ﻿using System;
+using Lucene.Net.Analysis;
+using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Index;
+using Lucene.Net.Search;
 using Lucene.Net.Util;
 using Xunit;
 
@@ -17,23 +20,32 @@ namespace Lucene.Net.Sql.Tests
                 ConnectionString = "..."
             };
 
+            const LuceneVersion appLuceneVersion = LuceneVersion.LUCENE_48;
+
             Directory = new SqlDirectory(options);
 
-            var appLuceneVersion = LuceneVersion.LUCENE_48;
+            Analyzer = new StandardAnalyzer(appLuceneVersion);
 
-            var analyzer = new StandardAnalyzer(appLuceneVersion);
-
-            var indexConfig = new IndexWriterConfig(AppLuceneVersion, analyzer);
+            Writer = new IndexWriter(Directory, new IndexWriterConfig(appLuceneVersion, Analyzer));
         }
 
         public void Dispose()
         {
+            Writer.Dispose();
+            Analyzer.Dispose();
             Directory.Dispose();
         }
 
         public SqlDirectory Directory { get; }
 
         public IndexWriter Writer { get; }
+
+        public Analyzer Analyzer { get; }
+
+        public IndexSearcher CreateSearcher()
+        {
+            return new IndexSearcher(Writer.GetReader(applyAllDeletes: true));
+        }
     }
 
     [CollectionDefinition("Lucene storage collection")]
