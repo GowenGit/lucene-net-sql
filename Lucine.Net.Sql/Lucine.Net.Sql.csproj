@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <NoWarn>1701;1702;1591;0649</NoWarn>
+
+    <version>$(VersionSuffix)</version>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <Authors>Modestas Petravicius</Authors>
+    <Product>Lucine.Net SQL</Product>
+    <Description>Lucine.Net SQL is a library that allows to persist Lucine index files to SQL databases.</Description>
+    <Copyright>MIT</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/GowenGit/lucine-net-sql</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/GowenGit/lucine-net-sql</RepositoryUrl>
+    <PackageTags>Lucine; SQL; MySQL; Storage; Directory</PackageTags>
+    <PackageIcon>icon.png</PackageIcon>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Lucene.Net" Version="4.8.0-beta00011" />
+    <PackageReference Include="MySql.Data" Version="8.0.21" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Obsessive.Defender" Version="1.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="MySql\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Schema\*" />
+  </ItemGroup>
+</Project>
