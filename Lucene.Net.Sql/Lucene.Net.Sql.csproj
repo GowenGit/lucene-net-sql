@@ -34,12 +34,4 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Schema\*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Schema\purge_mysql.sql" />
-  </ItemGroup>
 </Project>

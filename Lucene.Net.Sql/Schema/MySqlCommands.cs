@@ -1,4 +1,11 @@
-﻿CREATE TABLE IF NOT EXISTS `{0}_data_blocks` (
+﻿namespace Lucene.Net.Sql.Schema
+{
+    internal static class MySqlCommands
+    {
+        public const string InitializeCommand = @"
+BEGIN;
+
+CREATE TABLE IF NOT EXISTS `{0}_data_blocks` (
   `inode` bigint(20) NOT NULL,
   `seq` int unsigned not null,
   `data` blob ,
@@ -11,7 +18,7 @@ CREATE TABLE IF NOT EXISTS `{0}_inodes` (
   `directory` varchar(255) NOT NULL,
   `size` bigint(20) NOT NULL default '0',
   UNIQUE KEY `name` (`name`,`directory`),
-  KEY `inode` (`inode`)
+  KEY `inode` (`inode`),
   KEY `directory` (`directory`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -21,3 +28,18 @@ CREATE TABLE IF NOT EXISTS `{0}_locks` (
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, 
   PRIMARY KEY (`anchor`) 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+COMMIT;
+";
+
+        public const string PurgeCommand = @"
+BEGIN;
+
+DROP TABLE IF EXISTS `{0}_data_blocks`;
+DROP TABLE IF EXISTS `{0}_inodes`;
+DROP TABLE IF EXISTS `{0}_locks`;
+
+COMMIT;
+";
+    }
+}

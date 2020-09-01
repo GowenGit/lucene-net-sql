@@ -1,5 +1,9 @@
 ﻿using System;
 using Lucene.Net.Sql.Models;
+using Lucene.Net.Sql.Schema;
+using MySql.Data.MySqlClient;
+
+#pragma warning disable CA2100
 
 namespace Lucene.Net.Sql.Operators
 {
@@ -33,12 +37,22 @@ namespace Lucene.Net.Sql.Operators
 
         public void Initialise()
         {
-            throw new NotImplementedException();
+            var sql = GetCommand(MySqlCommands.InitializeCommand);
+
+            using var connection = GetConnection();
+            using var command = new MySqlCommand(sql, connection);
+
+            command.ExecuteNonQuery();
         }
 
         public void Purge()
         {
-            throw new NotImplementedException();
+            var sql = GetCommand(MySqlCommands.PurgeCommand);
+
+            using var connection = GetConnection();
+            using var command = new MySqlCommand(sql, connection);
+
+            command.ExecuteNonQuery();
         }
 
         public string[] ListNodes()
@@ -69,6 +83,20 @@ namespace Lucene.Net.Sql.Operators
         public void RemoveLock(string lockName)
         {
             throw new NotImplementedException();
+        }
+
+        private MySqlConnection GetConnection()
+        {
+            var connection = new MySqlConnection(_options.ConnectionString);
+
+            connection.Open();
+
+            return connection;
+        }
+
+        private string GetCommand(string text)
+        {
+            return string.Format(text, _options.TablePrefix);
         }
 
         public void Dispose() { }

@@ -18,6 +18,8 @@ namespace Lucene.Net.Sql
         {
             _operator = OperatorFactory.Create(options);
 
+            _operator.Initialise();
+
             var lockFactory = new SqlLockFactory(_operator, options);
 
             SetLockFactory(lockFactory);

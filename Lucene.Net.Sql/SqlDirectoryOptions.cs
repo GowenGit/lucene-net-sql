@@ -24,10 +24,16 @@ namespace Lucene.Net.Sql
         /// </summary>
         public string DirectoryName { get; }
 
+        /// <summary>
+        /// Gets SQL table prefix.
+        /// </summary>
+        public string TablePrefix { get; }
+
         public SqlDirectoryOptions(
             SqlDirectoryEngine engineType,
             string connectionString,
             string directoryName,
+            string tablePrefix = "lucene_fs",
             int blockSize = 8192)
         {
             SqlDirectoryEngine = engineType;
@@ -39,6 +45,10 @@ namespace Lucene.Net.Sql
             DirectoryName = !string.IsNullOrWhiteSpace(directoryName)
                 ? directoryName :
                 throw new ArgumentException("Argument can not be null or empty", nameof(directoryName));
+
+            TablePrefix = !string.IsNullOrWhiteSpace(tablePrefix)
+                ? tablePrefix :
+                throw new ArgumentException("Argument can not be null or empty", nameof(tablePrefix));
 
             BlockSize = blockSize > 1023
                 ? blockSize :

@@ -6,20 +6,13 @@ namespace Lucene.Net.Sql.Operators
     {
         public static IOperator Create(SqlDirectoryOptions options)
         {
-            IOperator sqlOperator;
-
             switch (options.SqlDirectoryEngine)
             {
                 case SqlDirectoryEngine.MySql:
-                    sqlOperator = new MySqlOperator(options);
-                    break;
+                    return new MySqlOperator(options);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
-            sqlOperator.Initialise();
-
-            return sqlOperator;
         }
     }
 }
