@@ -10,8 +10,8 @@ namespace Lucene.Net.Sql
 {
     internal class SqlIndexInput : IndexInput
     {
-        private readonly SqlDirectoryOptions _options;
         private readonly IOperator _sqlOperator;
+
         private readonly string _name;
         private readonly int _bufferSize;
 
@@ -27,7 +27,6 @@ namespace Lucene.Net.Sql
 
         internal SqlIndexInput(SqlDirectoryOptions options, IOperator sqlOperator, string name) : base(name)
         {
-            _options = options;
             _sqlOperator = sqlOperator;
             _name = name;
             _bufferSize = options.BlockSize;
@@ -36,12 +35,11 @@ namespace Lucene.Net.Sql
             Length = sqlOperator.GetNode(name)?.Size ?? 0;
         }
 
-        private SqlIndexInput(SqlDirectoryOptions options, IOperator sqlOperator, string name, long length, byte[] buffer) : base(name)
+        private SqlIndexInput(IOperator sqlOperator, string name, int bufferSize, long length, byte[] buffer) : base(name)
         {
-            _options = options;
             _sqlOperator = sqlOperator;
             _name = name;
-            _bufferSize = options.BlockSize;
+            _bufferSize = bufferSize;
             _buffer = buffer;
 
             Length = length;
@@ -95,7 +93,7 @@ namespace Lucene.Net.Sql
         {
             var buffer = _buffer.ToArray();
 
-            var clone = new SqlIndexInput(_options, _sqlOperator, _name, Length, buffer)
+            var clone = new SqlIndexInput(_sqlOperator, _name, _bufferSize, Length, buffer)
             {
                 _pos = _pos,
                 _block = _block

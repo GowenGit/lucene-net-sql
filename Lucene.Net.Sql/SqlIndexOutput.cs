@@ -8,7 +8,10 @@ namespace Lucene.Net.Sql
 {
     internal class SqlIndexOutput : IndexOutput
     {
+        private readonly IOperator _sqlOperator;
         private readonly IChecksum _checksum;
+
+        private readonly string _name;
         private readonly int _bufferSize;
 
         /// <summary>
@@ -29,6 +32,8 @@ namespace Lucene.Net.Sql
 
         internal SqlIndexOutput(SqlDirectoryOptions options, IOperator sqlOperator, string name)
         {
+            _sqlOperator = sqlOperator;
+            _name = name;
             _checksum = new Checksum();
             _bufferSize = options.BlockSize;
             _length = sqlOperator.GetNode(name)?.Size ?? 0;
@@ -44,8 +49,6 @@ namespace Lucene.Net.Sql
             FlushIfFull();
 
             _buffer[_bufferPosition++] = b;
-
-            _length++;
 
             _checksum.Update(b);
         }
@@ -70,34 +73,51 @@ namespace Lucene.Net.Sql
         /// <summary>
         /// Flush if we currently can populate fully
         /// more data blocks than before.
-        /// Or if current buffer that we have is full.
         /// </summary>
         private void FlushIfFull()
         {
             if ((_bufferStart + _bufferPosition) / _bufferSize > _length / _bufferSize)
             {
-                // Handles all append
-                // cases.
-                Flush();
-            }
-            else if (_bufferPosition >= _bufferSize)
-            {
-                // Can happen if we update
-                // in the middle of the file
                 Flush();
             }
         }
 
         public override void Flush()
         {
-            if (_buffer == null)
+            if (_buffer == null || _bufferPosition == 0)
             {
                 return;
             }
 
-            // TODO: write data
+            var block = _bufferStart / _bufferSize;
+
+            if (_bufferStart % _bufferSize == 0)
+            {
+                // not full block and not at the end of the file
+                if (_bufferPosition != _bufferSize && _bufferStart + _bufferPosition < Length)
+                {
+                    var firstBlock = _sqlOperator.GetBlock(_name, block);
+
+                    Buffer.BlockCopy(firstBlock, _bufferPosition, _buffer, _bufferPosition, firstBlock.Length - _bufferPosition);
+                }
+
+                _sqlOperator.WriteBlock(_name, block, _buffer);
+            }
+            else
+            {
+                var firstBuffer = new byte[_bufferSize];
+
+                var firstBlock = _sqlOperator.GetBlock(_name, block);
+
+                Buffer.BlockCopy(firstBlock, 0, firstBuffer, 0, (int)(_bufferStart % _bufferSize));
+                Buffer.BlockCopy(_buffer, 0, firstBuffer, (int)(_bufferStart % _bufferSize), _bufferPosition);
+
+                _sqlOperator.WriteBlock(_name, block, firstBuffer);
+            }
+
             _bufferStart += _bufferPosition;
             _bufferPosition = 0;
+            _length = Math.Max(_length, _bufferStart);
         }
 
         public override long GetFilePointer()
