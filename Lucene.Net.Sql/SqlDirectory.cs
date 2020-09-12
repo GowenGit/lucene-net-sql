@@ -12,10 +12,13 @@ namespace Lucene.Net.Sql
     /// </summary>
     public sealed class SqlDirectory : BaseDirectory
     {
+        private readonly SqlDirectoryOptions _options;
+
         private readonly IOperator _operator;
 
         public SqlDirectory(SqlDirectoryOptions options)
         {
+            _options = options;
             _operator = OperatorFactory.Create(options);
 
             _operator.Initialise();
@@ -53,13 +56,13 @@ namespace Lucene.Net.Sql
         /// <inheritdoc/>
         public override IndexOutput CreateOutput(string name, IOContext context)
         {
-            throw new System.NotImplementedException();
+            return new SqlIndexOutput(_options, _operator, name);
         }
 
         /// <inheritdoc/>
         public override IndexInput OpenInput(string name, IOContext context)
         {
-            throw new System.NotImplementedException();
+            return new SqlIndexInput(_options, _operator, name);
         }
 
         /// <inheritdoc/>

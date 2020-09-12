@@ -24,6 +24,10 @@ namespace Lucene.Net.Sql.Operators
         bool LockExists(string lockName);
 
         void RemoveLock(string lockName);
+
+        byte[] GetBlock(string name, long block);
+
+        byte[] WriteBlock(string name, long block, byte[] data);
     }
 
     internal class MySqlOperator : IOperator
@@ -81,6 +85,16 @@ namespace Lucene.Net.Sql.Operators
         }
 
         public void RemoveLock(string lockName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public byte[] GetBlock(string name, long block)
+        {
+            throw new NotImplementedException();
+        }
+
+        public byte[] WriteBlock(string name, long block, byte[] data)
         {
             throw new NotImplementedException();
         }

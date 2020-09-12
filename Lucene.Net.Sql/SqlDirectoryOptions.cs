@@ -1,13 +1,20 @@
 ﻿using System;
 
+#pragma warning disable CA1822
+
 namespace Lucene.Net.Sql
 {
     public class SqlDirectoryOptions
     {
         /// <summary>
         /// Gets SQL block size in bytes.
+        /// This can not be changed once data
+        /// starts to be written so not configurable
+        /// at the moment. Can extend later if we add
+        /// checks to verify that there are no written
+        /// block of old size.
         /// </summary>
-        public int BlockSize { get; }
+        public int BlockSize => 16384;
 
         /// <summary>
         /// Gets SQL engine type.
@@ -33,8 +40,7 @@ namespace Lucene.Net.Sql
             SqlDirectoryEngine engineType,
             string connectionString,
             string directoryName,
-            string tablePrefix = "lucene_fs",
-            int blockSize = 8192)
+            string tablePrefix = "lucene_fs")
         {
             SqlDirectoryEngine = engineType;
 
@@ -49,10 +55,6 @@ namespace Lucene.Net.Sql
             TablePrefix = !string.IsNullOrWhiteSpace(tablePrefix)
                 ? tablePrefix :
                 throw new ArgumentException("Argument can not be null or empty", nameof(tablePrefix));
-
-            BlockSize = blockSize > 1023
-                ? blockSize :
-                throw new ArgumentException("Argument can not be less than 1024", nameof(blockSize));
         }
     }
 
