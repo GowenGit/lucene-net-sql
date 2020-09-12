@@ -54,7 +54,7 @@ namespace Lucene.Net.Sql
                 FetchBlock(block);
             }
 
-            return _buffer[_pos % _bufferSize - 1];
+            return _buffer[_pos++ % _bufferSize];
         }
 
         private void FetchBlock(long block)
@@ -73,9 +73,9 @@ namespace Lucene.Net.Sql
 
         public override void ReadBytes(byte[] b, int offset, int len)
         {
-            for (var i = offset; i < len; i++)
+            for (var i = 0; i < len; i++)
             {
-                b[i] = ReadByte();
+                b[offset + i] = ReadByte();
             }
         }
 
