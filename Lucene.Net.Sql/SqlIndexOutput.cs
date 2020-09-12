@@ -76,7 +76,7 @@ namespace Lucene.Net.Sql
         /// </summary>
         private void FlushIfFull()
         {
-            if ((_bufferStart + _bufferPosition) / _bufferSize > _length / _bufferSize)
+            if ((_bufferStart + _bufferPosition) % _bufferSize == 0)
             {
                 Flush();
             }
@@ -91,6 +91,8 @@ namespace Lucene.Net.Sql
 
             var block = _bufferStart / _bufferSize;
 
+            byte[] buffer;
+
             if (_bufferStart % _bufferSize == 0)
             {
                 // not full block and not at the end of the file
@@ -101,7 +103,7 @@ namespace Lucene.Net.Sql
                     Buffer.BlockCopy(firstBlock, _bufferPosition, _buffer, _bufferPosition, firstBlock.Length - _bufferPosition);
                 }
 
-                _sqlOperator.WriteBlock(_name, block, _buffer);
+                buffer = _buffer;
             }
             else
             {
@@ -112,8 +114,10 @@ namespace Lucene.Net.Sql
                 Buffer.BlockCopy(firstBlock, 0, firstBuffer, 0, (int)(_bufferStart % _bufferSize));
                 Buffer.BlockCopy(_buffer, 0, firstBuffer, (int)(_bufferStart % _bufferSize), _bufferPosition);
 
-                _sqlOperator.WriteBlock(_name, block, firstBuffer);
+                buffer = firstBuffer;
             }
+
+            _sqlOperator.WriteBlock(_name, block, buffer);
 
             _bufferStart += _bufferPosition;
             _bufferPosition = 0;
@@ -132,9 +136,14 @@ namespace Lucene.Net.Sql
 
             if (pos > _length)
             {
+                // make sure we append to the end
+                _bufferStart = _length;
+
                 var pad = pos - _length;
 
                 WriteBytes(new byte[pad], 0, (int)pad);
+
+                Flush();
             }
 
             _bufferStart = pos;
