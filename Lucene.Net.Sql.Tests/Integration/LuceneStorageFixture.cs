@@ -37,8 +37,8 @@ namespace Lucene.Net.Sql.Tests.Integration
         {
             Writer.Dispose();
             Analyzer.Dispose();
-            Directory.Dispose();
 
+            Directory.Dispose();
             MySqlOperator.PurgeTables();
             MySqlOperator.Dispose();
         }
