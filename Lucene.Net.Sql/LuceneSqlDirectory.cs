@@ -67,7 +67,15 @@ namespace Lucene.Net.Sql
         {
             var node = _operator.GetNode(name);
 
-            return new SqlIndexInput(_options, _operator, node);
+            return new SqlIndexInput(_options, _operator, node, context);
+        }
+
+        /// <inheritdoc/>
+        public override IndexInputSlicer CreateSlicer(string name, IOContext context)
+        {
+            var node = _operator.GetNode(name);
+
+            return new SqlIndexInputSlicer(_options, _operator, node, context);
         }
 
         /// <inheritdoc/>

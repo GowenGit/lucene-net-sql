@@ -9,6 +9,7 @@ using Lucene.Net.Search;
 using Lucene.Net.Sql.MySql;
 using Lucene.Net.Store;
 using Lucene.Net.Util;
+using Directory = System.IO.Directory;
 
 namespace Lucene.Net.Sql.Performance
 {
@@ -109,7 +110,6 @@ namespace Lucene.Net.Sql.Performance
         {
             _mySqlWriter.Dispose();
             _mySqlDirectory.Dispose();
-            _mySqlOperator.PurgeTables();
             _mySqlOperator.Dispose();
 
             _fileWriter.Dispose();
@@ -120,6 +120,12 @@ namespace Lucene.Net.Sql.Performance
         public void GlobalCleanup()
         {
             _analyzer.Dispose();
+
+            Directory.Delete(IndexLocation, true);
+
+            using var mySqlOperator = MySqlLuceneOperator.Create(_options);
+
+            mySqlOperator.PurgeTables();
         }
     }
 }

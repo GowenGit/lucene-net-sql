@@ -1,9 +1,11 @@
-﻿using J2N.Collections.Generic;
+﻿using System.Data;
+using J2N.Collections.Generic;
 using Lucene.Net.Sql.Exceptions;
 using Lucene.Net.Sql.Models;
 using MySql.Data.MySqlClient;
 
 #pragma warning disable CA2100
+#pragma warning disable CA2213
 
 namespace Lucene.Net.Sql.MySql
 {
@@ -29,12 +31,39 @@ namespace Lucene.Net.Sql.MySql
             return sqlOperator;
         }
 
+        private MySqlConnection? _connection;
+
+        /// <summary>
+        /// Gets TODO: more clever connection pooling.
+        /// </summary>
+        private MySqlConnection Connection
+        {
+            get
+            {
+                if (_connection == null)
+                {
+                    _connection = new MySqlConnection(_options.ConnectionString);
+
+                    _connection.Open();
+                }
+                else if (_connection.State == ConnectionState.Closed)
+                {
+                    _connection.Dispose();
+
+                    _connection = new MySqlConnection(_options.ConnectionString);
+
+                    _connection.Open();
+                }
+
+                return _connection;
+            }
+        }
+
         private void SetupTables()
         {
             var sql = GetCommand(MySqlCommands.SetupTablesCommand);
 
-            using var connection = GetConnection();
-            using var command = new MySqlCommand(sql, connection);
+            using var command = new MySqlCommand(sql, Connection);
 
             command.ExecuteNonQuery();
         }
@@ -43,8 +72,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.PurgeTablesCommand);
 
-            using var connection = GetConnection();
-            using var command = new MySqlCommand(sql, connection);
+            using var command = new MySqlCommand(sql, Connection);
 
             command.ExecuteNonQuery();
         }
@@ -53,8 +81,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.ListNodesQuery);
 
-            using var connection = GetConnection();
-            using var command = new MySqlCommand(sql, connection);
+            using var command = new MySqlCommand(sql, Connection);
 
             command.Parameters.AddWithValue("directory", _options.DirectoryName);
 
@@ -74,8 +101,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.CreateIfNotExistsAndGetNodeQuery);
 
-            using var connection = GetConnection();
-            using var command = new MySqlCommand(sql, connection);
+            using var command = new MySqlCommand(sql, Connection);
 
             command.Parameters.AddWithValue("name", name);
             command.Parameters.AddWithValue("directory", _options.DirectoryName);
@@ -101,8 +127,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.RemoveNodeCommand);
 
-            using var connection = GetConnection();
-            using var command = new MySqlCommand(sql, connection);
+            using var command = new MySqlCommand(sql, Connection);
 
             command.Parameters.AddWithValue("name", name);
             command.Parameters.AddWithValue("directory", _options.DirectoryName);
@@ -114,8 +139,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.AddLockCommand);
 
-            using var connection = GetConnection();
-            using var command = new MySqlCommand(sql, connection);
+            using var command = new MySqlCommand(sql, Connection);
 
             command.Parameters.AddWithValue("anchor", lockName);
             command.Parameters.AddWithValue("lock_id", lockId);
@@ -130,8 +154,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.LockExistsQuery);
 
-            using var connection = GetConnection();
-            using var command = new MySqlCommand(sql, connection);
+            using var command = new MySqlCommand(sql, Connection);
 
             command.Parameters.AddWithValue("anchor", lockName);
 
@@ -142,8 +165,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.DeleteLockCommand);
 
-            using var connection = GetConnection();
-            using var command = new MySqlCommand(sql, connection);
+            using var command = new MySqlCommand(sql, Connection);
 
             command.Parameters.AddWithValue("anchor", lockName);
 
@@ -154,8 +176,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.GetBlockCommand);
 
-            using var connection = GetConnection();
-            using var command = new MySqlCommand(sql, connection);
+            using var command = new MySqlCommand(sql, Connection);
 
             command.Parameters.AddWithValue("node_id", nodeId);
             command.Parameters.AddWithValue("block", block);
@@ -176,8 +197,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.WriteBlockCommand);
 
-            using var connection = GetConnection();
-            using var command = new MySqlCommand(sql, connection);
+            using var command = new MySqlCommand(sql, Connection);
 
             command.Parameters.AddWithValue("node_id", nodeId);
             command.Parameters.AddWithValue("block", block);
@@ -187,20 +207,14 @@ namespace Lucene.Net.Sql.MySql
             command.ExecuteNonQuery();
         }
 
-        private MySqlConnection GetConnection()
-        {
-            var connection = new MySqlConnection(_options.ConnectionString);
-
-            connection.Open();
-
-            return connection;
-        }
-
         private string GetCommand(string text)
         {
             return string.Format(text, _options.TablePrefix);
         }
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+            _connection?.Dispose();
+        }
     }
 }

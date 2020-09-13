@@ -27,7 +27,7 @@ namespace Lucene.Net.Sql.Tests
                     UnitTest)
             { BlockSize = UnitTestBlockSize };
 
-            return new SqlIndexInput(options, sqlOperator.Object, new Node { Size = 10, Name = UnitTest, Id = UnitTestId });
+            return new SqlIndexInput(options, sqlOperator.Object, new Node { Size = 10, Name = UnitTest, Id = UnitTestId}, 0, 10, 3);
         }
 
         [Fact]
