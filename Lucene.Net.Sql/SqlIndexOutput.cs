@@ -128,11 +128,11 @@ namespace Lucene.Net.Sql
                 buffer = firstBuffer;
             }
 
-            _sqlOperator.WriteBlock(_nodeId, block, buffer);
-
             _bufferStart += _bufferPosition;
             _bufferPosition = 0;
             _length = Math.Max(_length, _bufferStart);
+
+            _sqlOperator.WriteBlock(_nodeId, block, buffer, _length);
         }
 
         public override long GetFilePointer()

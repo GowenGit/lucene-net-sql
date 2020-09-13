@@ -48,7 +48,7 @@ WHERE `directory` = @directory;
 SELECT
     `node` as `id`,
     `name`,
-    COALESCE((SELECT SUM(OCTET_LENGTH(`data`)) FROM `{0}_data_blocks` WHERE `node` = `id`), 0) as size
+    `size`
 FROM `{0}_nodes`
 WHERE `name` = @name;
 ";
@@ -93,6 +93,8 @@ SELECT `data` FROM `{0}_data_blocks` WHERE `node` = @node_id AND `seq` = @block;
 ";
 
         public const string WriteBlockCommand = @"
+BEGIN;
+
 INSERT INTO `{0}_data_blocks`
 (
     `node`, `seq`, `data`
@@ -103,6 +105,12 @@ VALUES
 )
 ON DUPLICATE KEY UPDATE
     `data` = @data;
+
+UPDATE `{0}_nodes`
+SET `size` = @size
+WHERE `node` = @node_id;
+
+COMMIT;
 ";
 
         public const string CreateNodeCommand = @"

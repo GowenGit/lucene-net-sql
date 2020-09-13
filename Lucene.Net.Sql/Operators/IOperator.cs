@@ -30,7 +30,7 @@ namespace Lucene.Net.Sql.Operators
 
         byte[] GetBlock(long nodeId, long block);
 
-        void WriteBlock(long nodeId, long block, byte[] data);
+        void WriteBlock(long nodeId, long block, byte[] data, long length);
     }
 
     internal class MySqlOperator : IOperator
@@ -205,7 +205,7 @@ namespace Lucene.Net.Sql.Operators
             return buffer;
         }
 
-        public void WriteBlock(long nodeId, long block, byte[] data)
+        public void WriteBlock(long nodeId, long block, byte[] data, long length)
         {
             var sql = GetCommand(MySqlCommands.WriteBlockCommand);
 
@@ -215,6 +215,7 @@ namespace Lucene.Net.Sql.Operators
             command.Parameters.AddWithValue("node_id", nodeId);
             command.Parameters.AddWithValue("block", block);
             command.Parameters.AddWithValue("data", data);
+            command.Parameters.AddWithValue("size", length);
 
             command.ExecuteNonQuery();
         }
