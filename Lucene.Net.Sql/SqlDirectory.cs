@@ -50,18 +50,24 @@ namespace Lucene.Net.Sql
         /// <inheritdoc/>
         public override long FileLength(string name)
         {
-            return _operator.GetNode(name)?.Size ?? 0;
+            var length = _operator.GetNode(name)?.Size ?? 0;
+
+            return length;
         }
 
         /// <inheritdoc/>
         public override IndexOutput CreateOutput(string name, IOContext context)
         {
+            _operator.AddNode(name);
+
             return new SqlIndexOutput(_options, _operator, name);
         }
 
         /// <inheritdoc/>
         public override IndexInput OpenInput(string name, IOContext context)
         {
+            _operator.AddNode(name);
+
             return new SqlIndexInput(_options, _operator, name);
         }
 

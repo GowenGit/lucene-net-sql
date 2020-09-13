@@ -1,4 +1,5 @@
 ﻿using System;
+using J2N.Collections.Generic;
 using Lucene.Net.Sql.Models;
 using Lucene.Net.Sql.Schema;
 using MySql.Data.MySqlClient;
@@ -15,6 +16,8 @@ namespace Lucene.Net.Sql.Operators
 
         string[] ListNodes();
 
+        void AddNode(string name);
+
         Node? GetNode(string name);
 
         void RemoveNode(string name);
@@ -25,9 +28,9 @@ namespace Lucene.Net.Sql.Operators
 
         void RemoveLock(string lockName);
 
-        byte[] GetBlock(string name, long block);
+        byte[] GetBlock(long nodeId, long block);
 
-        byte[] WriteBlock(string name, long block, byte[] data);
+        void WriteBlock(long nodeId, long block, byte[] data);
     }
 
     internal class MySqlOperator : IOperator
@@ -61,42 +64,159 @@ namespace Lucene.Net.Sql.Operators
 
         public string[] ListNodes()
         {
-            throw new NotImplementedException();
+            var sql = GetCommand(MySqlCommands.ListNodesQuery);
+
+            using var connection = GetConnection();
+            using var command = new MySqlCommand(sql, connection);
+
+            command.Parameters.AddWithValue("directory", _options.DirectoryName);
+
+            using var reader = command.ExecuteReader();
+
+            var result = new List<string>();
+
+            while (reader.Read())
+            {
+                result.Add(reader.GetString("name"));
+            }
+
+            return result.ToArray();
+        }
+
+        public void AddNode(string name)
+        {
+            var sql = GetCommand(MySqlCommands.CreateNodeCommand);
+
+            using var connection = GetConnection();
+            using var command = new MySqlCommand(sql, connection);
+
+            command.Parameters.AddWithValue("name", name);
+            command.Parameters.AddWithValue("directory", _options.DirectoryName);
+
+            command.ExecuteNonQuery();
         }
 
         public Node? GetNode(string name)
         {
-            throw new NotImplementedException();
+            var sql = GetCommand(MySqlCommands.GetNodeQuery);
+
+            using var connection = GetConnection();
+            using var command = new MySqlCommand(sql, connection);
+
+            command.Parameters.AddWithValue("name", name);
+
+            using var reader = command.ExecuteReader();
+
+            if (!reader.HasRows)
+            {
+                return null;
+            }
+
+            reader.Read();
+
+            return new Node
+            {
+                Id = reader.GetInt64("id"),
+                Name = reader.GetString("name"),
+                Size = reader.GetInt64("size")
+            };
         }
 
         public void RemoveNode(string name)
         {
-            throw new NotImplementedException();
+            var sql = GetCommand(MySqlCommands.RemoveNodeCommand);
+
+            using var connection = GetConnection();
+            using var command = new MySqlCommand(sql, connection);
+
+            command.Parameters.AddWithValue("name", name);
+
+            command.ExecuteNonQuery();
         }
 
         public string AddLock(string lockName, string lockId)
         {
-            throw new NotImplementedException();
+            var sql = GetCommand(MySqlCommands.AddLockCommand);
+
+            using var connection = GetConnection();
+            using var command = new MySqlCommand(sql, connection);
+
+            command.Parameters.AddWithValue("anchor", lockName);
+            command.Parameters.AddWithValue("lock_id", lockId);
+            command.Parameters.AddWithValue("max_lock_time_in_seconds", 3600);
+
+            var lockObjectId = command.ExecuteScalar() as string;
+
+            return lockObjectId ?? string.Empty;
         }
 
-        public bool LockExists(string lockId)
+        public bool LockExists(string lockName)
         {
-            throw new NotImplementedException();
+            var sql = GetCommand(MySqlCommands.LockExistsQuery);
+
+            using var connection = GetConnection();
+            using var command = new MySqlCommand(sql, connection);
+
+            command.Parameters.AddWithValue("anchor", lockName);
+
+            var lockExists = command.ExecuteScalar() as int?;
+
+            return lockExists == 1;
         }
 
         public void RemoveLock(string lockName)
         {
-            throw new NotImplementedException();
+            var sql = GetCommand(MySqlCommands.DeleteLockCommand);
+
+            using var connection = GetConnection();
+            using var command = new MySqlCommand(sql, connection);
+
+            command.Parameters.AddWithValue("anchor", lockName);
+
+            command.ExecuteNonQuery();
         }
 
-        public byte[] GetBlock(string name, long block)
+        /// <summary>
+        /// TODO: optimize byte copy.
+        /// </summary>
+        public byte[] GetBlock(long nodeId, long block)
         {
-            throw new NotImplementedException();
+            var sql = GetCommand(MySqlCommands.GetBlockCommand);
+
+            using var connection = GetConnection();
+            using var command = new MySqlCommand(sql, connection);
+
+            command.Parameters.AddWithValue("node_id", nodeId);
+            command.Parameters.AddWithValue("block", block);
+
+            using var reader = command.ExecuteReader();
+
+            if (!reader.HasRows)
+            {
+                return Array.Empty<byte>();
+            }
+
+            reader.Read();
+
+            var buffer = new byte[_options.BlockSize];
+
+            reader.GetBytes(0, 0, buffer, 0, _options.BlockSize);
+
+            return buffer;
         }
 
-        public byte[] WriteBlock(string name, long block, byte[] data)
+        public void WriteBlock(long nodeId, long block, byte[] data)
         {
-            throw new NotImplementedException();
+            var sql = GetCommand(MySqlCommands.WriteBlockCommand);
+
+            using var connection = GetConnection();
+            using var command = new MySqlCommand(sql, connection);
+
+            command.Parameters.AddWithValue("node_id", nodeId);
+            command.Parameters.AddWithValue("block", block);
+            command.Parameters.AddWithValue("data", data);
+
+            command.ExecuteNonQuery();
         }
 
         private MySqlConnection GetConnection()

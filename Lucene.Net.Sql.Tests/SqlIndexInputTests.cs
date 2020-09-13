@@ -19,19 +19,19 @@ namespace Lucene.Net.Sql.Tests
                 .Returns(new Node { Size = 10 });
 
             sqlOperator
-                .Setup(x => x.GetBlock(UnitTest, 0))
+                .Setup(x => x.GetBlock(0, 0))
                 .Returns(new byte[] {1, 1, 1});
 
             sqlOperator
-                .Setup(x => x.GetBlock(UnitTest, 1))
+                .Setup(x => x.GetBlock(0, 1))
                 .Returns(new byte[] { 2, 2, 2 });
 
             sqlOperator
-                .Setup(x => x.GetBlock(UnitTest, 2))
+                .Setup(x => x.GetBlock(0, 2))
                 .Returns(new byte[] { 3, 3, 3 });
 
             sqlOperator
-                .Setup(x => x.GetBlock(UnitTest, 3))
+                .Setup(x => x.GetBlock(0, 3))
                 .Returns(new byte[] { 4, 3, 3 });
 
             var options = new SqlDirectoryOptions(

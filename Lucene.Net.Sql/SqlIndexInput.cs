@@ -14,8 +14,8 @@ namespace Lucene.Net.Sql
 
         private readonly string _name;
         private readonly int _bufferSize;
-
         private readonly byte[] _buffer;
+        private readonly long _nodeId;
 
         /// <summary>
         /// Gets file length.
@@ -27,21 +27,30 @@ namespace Lucene.Net.Sql
 
         internal SqlIndexInput(SqlDirectoryOptions options, IOperator sqlOperator, string name) : base(name)
         {
+            var node = sqlOperator.GetNode(name);
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
             _sqlOperator = sqlOperator;
-            _name = name;
             _bufferSize = options.BlockSize;
             _buffer = new byte[_bufferSize];
+            _name = name;
 
-            Length = sqlOperator.GetNode(name)?.Size ?? 0;
+            _nodeId = node.Id;
+            Length = node.Size;
         }
 
-        private SqlIndexInput(IOperator sqlOperator, string name, int bufferSize, long length, byte[] buffer) : base(name)
+        private SqlIndexInput(IOperator sqlOperator, string name, int bufferSize, long nodeId, long length, byte[] buffer) : base(name)
         {
             _sqlOperator = sqlOperator;
-            _name = name;
             _bufferSize = bufferSize;
             _buffer = buffer;
+            _name = name;
 
+            _nodeId = nodeId;
             Length = length;
         }
 
@@ -57,26 +66,29 @@ namespace Lucene.Net.Sql
             return _buffer[_pos++ % _bufferSize];
         }
 
-        private void FetchBlock(long block)
-        {
-            if (_block * _bufferSize > Length)
-            {
-                throw new EndOfStreamException($"Read past EOF: {_name}, pos {_block * _bufferSize}");
-            }
-
-            var blockBuffer = _sqlOperator.GetBlock(_name, block);
-
-            Buffer.BlockCopy(blockBuffer, 0, _buffer, 0, blockBuffer.Length);
-
-            _block = block;
-        }
-
+        /// <summary>
+        /// TODO: Array.Copy optimize.
+        /// </summary>
         public override void ReadBytes(byte[] b, int offset, int len)
         {
             for (var i = 0; i < len; i++)
             {
                 b[offset + i] = ReadByte();
             }
+        }
+
+        private void FetchBlock(long block)
+        {
+            if (_block * _bufferSize > Length)
+            {
+                throw new EndOfStreamException($"Read past EOF: {_nodeId}, pos {_block * _bufferSize}");
+            }
+
+            var blockBuffer = _sqlOperator.GetBlock(_nodeId, block);
+
+            Buffer.BlockCopy(blockBuffer, 0, _buffer, 0, blockBuffer.Length);
+
+            _block = block;
         }
 
         public override long GetFilePointer()
@@ -93,11 +105,10 @@ namespace Lucene.Net.Sql
         {
             var buffer = _buffer.ToArray();
 
-            var clone = new SqlIndexInput(_sqlOperator, _name, _bufferSize, Length, buffer)
-            {
-                _pos = _pos,
-                _block = _block
-            };
+            var clone = new SqlIndexInput(_sqlOperator, _name, _bufferSize, _nodeId, Length, buffer);
+
+            clone._pos = _pos;
+            clone._block = _block;
 
             return clone;
         }

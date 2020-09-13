@@ -71,7 +71,7 @@ namespace Lucene.Net.Sql
 
         public override bool IsLocked()
         {
-            return _sqlOperator.LockExists(_lockId);
+            return _sqlOperator.LockExists(_lockName);
         }
 
         private static string CreateLockId()
