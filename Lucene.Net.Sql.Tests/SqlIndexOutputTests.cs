@@ -1,10 +1,11 @@
-﻿using Lucene.Net.Sql.Models;
-using Lucene.Net.Sql.Operators;
+﻿using System;
+using Lucene.Net.Sql.Models;
 using Moq;
 using Xunit;
 
 #pragma warning disable CS0618
 
+// ReSharper disable SuggestBaseTypeForParameter
 namespace Lucene.Net.Sql.Tests
 {
     public class SqlIndexOutputTests
@@ -14,33 +15,30 @@ namespace Lucene.Net.Sql.Tests
 
         private const int UnitTestBlockSize = 4;
 
-        private static SqlIndexOutput GetSutObject(Mock<IOperator> sqlOperator)
+        private static SqlIndexOutput GetSutObject(Mock<IDatabaseLuceneOperator> sqlOperator)
         {
-            sqlOperator
-                .Setup(x => x.GetNode(It.IsAny<string>()))
-                .Returns(new Node {Id = UnitTestId});
-
             var options = new SqlDirectoryOptions(
-                SqlDirectoryEngine.MySql,
                 UnitTest,
                 UnitTest)
             { BlockSize = UnitTestBlockSize };
 
-            return new SqlIndexOutput(options, sqlOperator.Object, UnitTest);
+            return new SqlIndexOutput(options, sqlOperator.Object, new Node { Id = UnitTestId, Name = UnitTest });
         }
 
         [Fact]
         public void Write_OneByte_ShouldFlush()
         {
-            var sqlOperator = new Mock<IOperator>();
+            var sqlOperator = new Mock<IDatabaseLuceneOperator>();
 
             using var sut = GetSutObject(sqlOperator);
+
+            SetupWriteBlock(sqlOperator, 0, new byte[] { 1 }, 1);
 
             sut.WriteByte(1);
 
             sut.Flush();
 
-            sqlOperator.Verify(x => x.WriteBlock(UnitTestId, 0, VerifyArray(new byte[] { 1 }), 1));
+            sqlOperator.Verify();
 
             Assert.Equal(1, sut.Length);
         }
@@ -48,10 +46,10 @@ namespace Lucene.Net.Sql.Tests
         [Fact]
         public void Write_MultipleBytes_ShouldFlush()
         {
-            var sqlOperator = new Mock<IOperator>();
+            var sqlOperator = new Mock<IDatabaseLuceneOperator>();
 
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 0, VerifyArray(new byte[] { 1, 1, 1, 1 }), 4)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 1, VerifyArray(new byte[] { 2, 1, 1, 1 }), 5)).Verifiable();
+            SetupWriteBlock(sqlOperator, 0, new byte[] { 1, 1, 1, 1 }, 4);
+            SetupWriteBlock(sqlOperator, 1, new byte[] { 2, 1, 1, 1 }, 5);
 
             using var sut = GetSutObject(sqlOperator);
 
@@ -72,17 +70,17 @@ namespace Lucene.Net.Sql.Tests
         [Fact]
         public void Write_BatchBytes_ShouldFlush()
         {
-            var sqlOperator = new Mock<IOperator>();
+            var sqlOperator = new Mock<IDatabaseLuceneOperator>();
 
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 0, VerifyArray(new byte[] { 1, 1, 1, 1 }), 4)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 1, VerifyArray(new byte[] { 2, 2, 2, 2 }), 8)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 2, VerifyArray(new byte[] { 3, 3, 3, 3 }), 12)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 3, VerifyArray(new byte[] { 4, 4, 4, 4 }), 16)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 4, VerifyArray(new byte[] { 5, 5, 5, 5 }), 20)).Verifiable();
+            SetupWriteBlock(sqlOperator, 0, new byte[] { 1, 1, 1, 1 }, 4);
+            SetupWriteBlock(sqlOperator, 1, new byte[] { 2, 2, 2, 2 }, 8);
+            SetupWriteBlock(sqlOperator, 2, new byte[] { 3, 3, 3, 3 }, 12);
+            SetupWriteBlock(sqlOperator, 3, new byte[] { 4, 4, 4, 4 }, 16);
+            SetupWriteBlock(sqlOperator, 4, new byte[] { 5, 5, 5, 5 }, 20);
 
             using var sut = GetSutObject(sqlOperator);
 
-            sut.WriteBytes(new byte[] {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5}, 20);
+            sut.WriteBytes(new byte[] { 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5 }, 20);
 
             sut.Flush();
 
@@ -94,13 +92,13 @@ namespace Lucene.Net.Sql.Tests
         [Fact]
         public void Write_OverrideBatchBytes_ShouldFlush()
         {
-            var sqlOperator = new Mock<IOperator>();
+            var sqlOperator = new Mock<IDatabaseLuceneOperator>();
 
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 0, VerifyArray(new byte[] { 1, 1, 1, 1 }), 4)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 1, VerifyArray(new byte[] { 2, 2, 2, 2 }), 8)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 2, VerifyArray(new byte[] { 3, 3, 3, 3 }), 12)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 3, VerifyArray(new byte[] { 4, 4, 4, 4 }), 16)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 4, VerifyArray(new byte[] { 5, 5, 5, 5 }), 20)).Verifiable();
+            SetupWriteBlock(sqlOperator, 0, new byte[] { 1, 1, 1, 1 }, 4);
+            SetupWriteBlock(sqlOperator, 1, new byte[] { 2, 2, 2, 2 }, 8);
+            SetupWriteBlock(sqlOperator, 2, new byte[] { 3, 3, 3, 3 }, 12);
+            SetupWriteBlock(sqlOperator, 3, new byte[] { 4, 4, 4, 4 }, 16);
+            SetupWriteBlock(sqlOperator, 4, new byte[] { 5, 5, 5, 5 }, 20);
 
             using var sut = GetSutObject(sqlOperator);
 
@@ -108,10 +106,10 @@ namespace Lucene.Net.Sql.Tests
 
             sut.Seek(3);
 
-            sqlOperator.Setup(x => x.GetBlock(UnitTestId, 0)).Returns(new byte[] {1, 1, 1, 1});
-            sqlOperator.Setup(x => x.GetBlock(UnitTestId, 1)).Returns(new byte[] { 2, 2, 2, 2 });
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 0, VerifyArray(new byte[] { 1, 1, 1, 6 }), 20)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 1, VerifyArray(new byte[] { 6, 6, 2, 2 }), 20)).Verifiable();
+            SetupGetBlock(sqlOperator, 0, new byte[] { 1, 1, 1, 1 });
+            SetupGetBlock(sqlOperator, 1, new byte[] { 2, 2, 2, 2 });
+            SetupWriteBlock(sqlOperator, 0, new byte[] { 1, 1, 1, 6 }, 20);
+            SetupWriteBlock(sqlOperator, 1, new byte[] { 6, 6, 2, 2 }, 20);
 
             sut.WriteBytes(new byte[] { 6, 6, 6 }, 3);
 
@@ -125,19 +123,19 @@ namespace Lucene.Net.Sql.Tests
         [Fact]
         public void Write_PadBatchBytes_ShouldFlush()
         {
-            var sqlOperator = new Mock<IOperator>();
+            var sqlOperator = new Mock<IDatabaseLuceneOperator>();
 
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 0, VerifyArray(new byte[] { 1, 1, 1, 1 }), 4)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 1, VerifyArray(new byte[] { 2, 2, 2, 2 }), 8)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 2, VerifyArray(new byte[] { 3, 3, 3, 3 }), 12)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 3, VerifyArray(new byte[] { 4, 4, 4, 4 }), 16)).Verifiable();
+            SetupWriteBlock(sqlOperator, 0, new byte[] { 1, 1, 1, 1 }, 4);
+            SetupWriteBlock(sqlOperator, 1, new byte[] { 2, 2, 2, 2 }, 8);
+            SetupWriteBlock(sqlOperator, 2, new byte[] { 3, 3, 3, 3 }, 12);
+            SetupWriteBlock(sqlOperator, 3, new byte[] { 4, 4, 4, 4 }, 16);
 
             using var sut = GetSutObject(sqlOperator);
 
             sut.WriteBytes(new byte[] { 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4 }, 16);
 
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 4, VerifyArray(new byte[] { 0, 0, 0, 0 }), 20)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 5, VerifyArray(new byte[] { 8, 0, 0, 0 }), 21)).Verifiable();
+            SetupWriteBlock(sqlOperator, 4, new byte[] { 0, 0, 0, 0 }, 20);
+            SetupWriteBlock(sqlOperator, 5, new byte[] { 8, 0, 0, 0 }, 21);
 
             sut.Seek(20);
 
@@ -153,31 +151,31 @@ namespace Lucene.Net.Sql.Tests
         [Fact]
         public void Write_SeekWriteBatchBytes_ShouldFlush()
         {
-            var sqlOperator = new Mock<IOperator>();
+            var sqlOperator = new Mock<IDatabaseLuceneOperator>();
 
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 0, VerifyArray(new byte[] { 1, 1, 1, 1 }), 4)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 1, VerifyArray(new byte[] { 2, 2, 2, 2 }), 8)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 2, VerifyArray(new byte[] { 3, 3, 3, 3 }), 12)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 3, VerifyArray(new byte[] { 4, 4, 4, 4 }), 16)).Verifiable();
+            SetupWriteBlock(sqlOperator, 0, new byte[] { 1, 1, 1, 1 }, 4);
+            SetupWriteBlock(sqlOperator, 1, new byte[] { 2, 2, 2, 2 }, 8);
+            SetupWriteBlock(sqlOperator, 2, new byte[] { 3, 3, 3, 3 }, 12);
+            SetupWriteBlock(sqlOperator, 3, new byte[] { 4, 4, 4, 4 }, 16);
 
             using var sut = GetSutObject(sqlOperator);
 
             sut.WriteBytes(new byte[] { 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4 }, 16);
 
-            sqlOperator.Setup(x => x.GetBlock(UnitTestId, 1)).Returns(new byte[] { 2, 2, 2, 2 });
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 1, VerifyArray(new byte[] { 6, 6, 6, 2 }), 16)).Verifiable();
+            SetupGetBlock(sqlOperator, 1, new byte[] { 2, 2, 2, 2 });
+            SetupWriteBlock(sqlOperator, 1, new byte[] { 6, 6, 6, 2 }, 16);
 
             sut.Seek(4);
 
             sut.WriteBytes(new byte[] { 6, 6, 6 }, 3);
 
-            sqlOperator.Setup(x => x.GetBlock(UnitTestId, 4)).Returns(new byte[] { 0, 0, 0, 2 });
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 4, VerifyArray(new byte[] { 0, 0, 0, 2 }), 19)).Verifiable();
+            SetupGetBlock(sqlOperator, 4, new byte[] { 0, 0, 0, 2 });
+            SetupWriteBlock(sqlOperator, 4, new byte[] { 0, 0, 0, 2 }, 19);
 
             sut.Seek(19);
 
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 4, VerifyArray(new byte[] { 0, 0, 0, 9 }), 20)).Verifiable();
-            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, 5, VerifyArray(new byte[] { 9, 9, 9, 2 }), 23)).Verifiable();
+            SetupWriteBlock(sqlOperator, 4, new byte[] { 0, 0, 0, 9 }, 20);
+            SetupWriteBlock(sqlOperator, 5, new byte[] { 9, 9, 9, 2 }, 23);
 
             sut.WriteBytes(new byte[] { 9, 9, 9, 9 }, 4);
 
@@ -186,6 +184,21 @@ namespace Lucene.Net.Sql.Tests
             sqlOperator.Verify();
 
             Assert.Equal(23, sut.Length);
+        }
+
+        private static void SetupWriteBlock(Mock<IDatabaseLuceneOperator> sqlOperator, long block, byte[] array, long nodeLength)
+        {
+            sqlOperator.Setup(x => x.WriteBlock(UnitTestId, block, VerifyArray(array), nodeLength)).Verifiable();
+        }
+
+        private static void SetupGetBlock(Mock<IDatabaseLuceneOperator> sqlOperator, long block, byte[] array)
+        {
+            sqlOperator
+                .Setup(x => x.GetBlock(UnitTestId, block, It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>()))
+                .Callback<long, long, byte[], int, int, int>((id, blockId, buffer, srcOffset, dstOffset, length) =>
+                {
+                    Array.Copy(array, srcOffset, buffer, dstOffset, length);
+                });
         }
 
         private static byte[] VerifyArray(byte[] expected)

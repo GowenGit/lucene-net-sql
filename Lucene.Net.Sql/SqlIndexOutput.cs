@@ -1,5 +1,5 @@
 ﻿using System;
-using Lucene.Net.Sql.Operators;
+using Lucene.Net.Sql.Models;
 using Lucene.Net.Store;
 
 #pragma warning disable SA1018
@@ -8,7 +8,7 @@ namespace Lucene.Net.Sql
 {
     internal class SqlIndexOutput : IndexOutput
     {
-        private readonly IOperator _sqlOperator;
+        private readonly IDatabaseLuceneOperator _sqlOperator;
         private readonly IChecksum _checksum;
 
         private readonly int _bufferSize;
@@ -30,15 +30,11 @@ namespace Lucene.Net.Sql
 
         private byte[] ? _buffer;
 
-        internal SqlIndexOutput(SqlDirectoryOptions options, IOperator sqlOperator, string name)
+        internal SqlIndexOutput(
+            SqlDirectoryOptions options,
+            IDatabaseLuceneOperator sqlOperator,
+            Node node)
         {
-            var node = sqlOperator.GetNode(name);
-
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
             _sqlOperator = sqlOperator;
             _checksum = new Checksum();
             _bufferSize = options.BlockSize;
@@ -106,26 +102,23 @@ namespace Lucene.Net.Sql
 
             if (_bufferStart % _bufferSize == 0)
             {
-                // not full block and not at the end of the file
+                // not full block and not at the end of the file, fill in remaining spaces from stored block.
                 if (_bufferPosition != _bufferSize && _bufferStart + _bufferPosition < Length)
                 {
-                    var firstBlock = _sqlOperator.GetBlock(_nodeId, block);
-
-                    Array.Copy(firstBlock, _bufferPosition, _buffer, _bufferPosition, firstBlock.Length - _bufferPosition);
+                    _sqlOperator.GetBlock(_nodeId, block, _buffer, _bufferPosition, _bufferPosition, _bufferSize - _bufferPosition);
                 }
 
                 buffer = _buffer;
             }
             else
             {
-                var firstBuffer = new byte[_bufferSize];
+                buffer = new byte[_bufferSize];
 
-                var firstBlock = _sqlOperator.GetBlock(_nodeId, block);
+                // fill in start of the block with stored buffer data
+                _sqlOperator.GetBlock(_nodeId, block, buffer, 0, 0, (int)(_bufferStart % _bufferSize));
 
-                Array.Copy(firstBlock, 0, firstBuffer, 0, (int)(_bufferStart % _bufferSize));
-                Array.Copy(_buffer, 0, firstBuffer, (int)(_bufferStart % _bufferSize), _bufferPosition);
-
-                buffer = firstBuffer;
+                // fill in remainder of the block with leftover data
+                Array.Copy(_buffer, 0, buffer, (int)(_bufferStart % _bufferSize), _bufferPosition);
             }
 
             _bufferStart += _bufferPosition;

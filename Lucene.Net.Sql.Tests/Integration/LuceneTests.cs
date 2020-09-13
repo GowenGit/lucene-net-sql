@@ -4,8 +4,11 @@ using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Xunit;
+using Xunit.Extensions.Ordering;
 
-namespace Lucene.Net.Sql.Tests
+#pragma warning disable SA1133
+
+namespace Lucene.Net.Sql.Tests.Integration
 {
     [Collection("Lucene storage collection")]
     public class LuceneTests
@@ -17,7 +20,7 @@ namespace Lucene.Net.Sql.Tests
             _fixture = fixture;
         }
 
-        [Fact]
+        [Fact, Order(1)]
         public void AddDocument_WhenCalled_ShouldNotThrow()
         {
             var source = new
@@ -40,28 +43,10 @@ namespace Lucene.Net.Sql.Tests
 
             _fixture.Writer.AddDocument(doc);
 
-            _fixture.Writer.Flush(triggerMerge: false, applyAllDeletes: false);
+            _fixture.Writer.Flush(false, false);
         }
 
-        [Fact]
-        public void Fetch_WhenCalled_ShouldReturnSomeHits()
-        {
-            var phrase = new MultiPhraseQuery
-            {
-                new Term("favoritePhrase", "brown"),
-                new Term("favoritePhrase", "fox")
-            };
-
-            var searcher = _fixture.CreateSearcher();
-
-            var result = searcher.Search(phrase, 20);
-
-            var hits = result.ScoreDocs;
-
-            Assert.NotEmpty(hits);
-        }
-
-        [Fact]
+        [Fact, Order(2)]
         public void AddDocument_WhenCalledForLargeDocument_ShouldNotThrow()
         {
             var text = File.ReadAllText("Data/data_01.txt");
@@ -88,10 +73,28 @@ namespace Lucene.Net.Sql.Tests
                 _fixture.Writer.AddDocument(doc);
             }
 
-            _fixture.Writer.Flush(triggerMerge: false, applyAllDeletes: false);
+            _fixture.Writer.Flush(false, false);
         }
 
-        [Fact]
+        [Fact, Order(3)]
+        public void Fetch_WhenCalled_ShouldReturnSomeHits()
+        {
+            var phrase = new MultiPhraseQuery
+            {
+                new Term("favoritePhrase", "brown"),
+                new Term("favoritePhrase", "fox")
+            };
+
+            var searcher = _fixture.CreateSearcher();
+
+            var result = searcher.Search(phrase, 20);
+
+            var hits = result.ScoreDocs;
+
+            Assert.NotEmpty(hits);
+        }
+
+        [Fact, Order(4)]
         public void Fetch_WhenCalledForLargeDocument_ShouldReturnSomeHits()
         {
             var phrase = new FuzzyQuery(new Term("text", "Mary"));

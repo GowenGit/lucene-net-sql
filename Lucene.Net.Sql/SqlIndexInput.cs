@@ -1,7 +1,6 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using Lucene.Net.Sql.Operators;
+using Lucene.Net.Sql.Exceptions;
+using Lucene.Net.Sql.Models;
 using Lucene.Net.Store;
 
 #pragma warning disable CA2000
@@ -10,12 +9,12 @@ namespace Lucene.Net.Sql
 {
     internal class SqlIndexInput : IndexInput
     {
-        private readonly IOperator _sqlOperator;
+        private readonly IDatabaseLuceneOperator _sqlOperator;
 
-        private readonly string _name;
+        private readonly Node _node;
+
         private readonly int _bufferSize;
         private readonly byte[] _buffer;
-        private readonly long _nodeId;
 
         /// <summary>
         /// Gets file length.
@@ -25,33 +24,33 @@ namespace Lucene.Net.Sql
         private long _pos;
         private long? _block;
 
-        internal SqlIndexInput(SqlDirectoryOptions options, IOperator sqlOperator, string name) : base(name)
+        internal SqlIndexInput(
+            SqlDirectoryOptions options,
+            IDatabaseLuceneOperator sqlOperator,
+            Node node) : base(node.Name)
         {
-            var node = sqlOperator.GetNode(name);
-
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
             _sqlOperator = sqlOperator;
+            _node = node;
             _bufferSize = options.BlockSize;
             _buffer = new byte[_bufferSize];
-            _name = name;
 
-            _nodeId = node.Id;
+            _node = node;
+
             Length = node.Size;
         }
 
-        private SqlIndexInput(IOperator sqlOperator, string name, int bufferSize, long nodeId, long length, byte[] buffer) : base(name)
+        private SqlIndexInput(
+            IDatabaseLuceneOperator sqlOperator,
+            Node node,
+            int bufferSize,
+            byte[] buffer) : base(node.Name)
         {
             _sqlOperator = sqlOperator;
             _bufferSize = bufferSize;
             _buffer = buffer;
-            _name = name;
 
-            _nodeId = nodeId;
-            Length = length;
+            _node = node;
+            Length = node.Size;
         }
 
         public override byte ReadByte()
@@ -81,12 +80,10 @@ namespace Lucene.Net.Sql
         {
             if (_block * _bufferSize > Length)
             {
-                throw new EndOfStreamException($"Read past EOF: {_nodeId}, pos {_block * _bufferSize}");
+                throw new LuceneSqlException($"Read past EOF: {_node.Id}, pos {_block * _bufferSize}");
             }
 
-            var blockBuffer = _sqlOperator.GetBlock(_nodeId, block);
-
-            Buffer.BlockCopy(blockBuffer, 0, _buffer, 0, blockBuffer.Length);
+            _sqlOperator.GetBlock(_node.Id, block, _buffer, 0, 0, _bufferSize);
 
             _block = block;
         }
@@ -103,12 +100,15 @@ namespace Lucene.Net.Sql
 
         public override object Clone()
         {
-            var buffer = _buffer.ToArray();
+            var buffer = new byte[_bufferSize];
 
-            var clone = new SqlIndexInput(_sqlOperator, _name, _bufferSize, _nodeId, Length, buffer);
+            Array.Copy(_buffer, buffer, _bufferSize);
 
-            clone._pos = _pos;
-            clone._block = _block;
+            var clone = new SqlIndexInput(_sqlOperator, _node, _bufferSize, buffer)
+            {
+                _pos = _pos,
+                _block = _block
+            };
 
             return clone;
         }

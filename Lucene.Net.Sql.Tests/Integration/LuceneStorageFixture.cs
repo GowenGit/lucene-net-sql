@@ -3,13 +3,16 @@ using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
-using Lucene.Net.Sql.Operators;
+using Lucene.Net.Sql.MySql;
 using Lucene.Net.Util;
 using Xunit;
 
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
+[assembly: TestCaseOrderer("Xunit.Extensions.Ordering.TestCaseOrderer", "Xunit.Extensions.Ordering")]
+
 #pragma warning disable CA1711
 
-namespace Lucene.Net.Sql.Tests
+namespace Lucene.Net.Sql.Tests.Integration
 {
     public sealed class LuceneStorageFixture : IDisposable
     {
@@ -17,11 +20,13 @@ namespace Lucene.Net.Sql.Tests
         {
             const string connectionString = "server=localhost;port=3306;database=lucene;uid=root;password=password;Allow User Variables=True;";
 
-            Options = new SqlDirectoryOptions(SqlDirectoryEngine.MySql, connectionString, "TestDirectory");
+            Options = new SqlDirectoryOptions(connectionString, "TestDirectory");
 
             const LuceneVersion appLuceneVersion = LuceneVersion.LUCENE_48;
 
-            Directory = new SqlDirectory(Options);
+            MySqlOperator = MySqlLuceneOperator.Create(Options);
+
+            Directory = new LuceneSqlDirectory(Options, MySqlOperator);
 
             Analyzer = new StandardAnalyzer(appLuceneVersion);
 
@@ -34,12 +39,15 @@ namespace Lucene.Net.Sql.Tests
             Analyzer.Dispose();
             Directory.Dispose();
 
-            // PurgeTables();
+            MySqlOperator.PurgeTables();
+            MySqlOperator.Dispose();
         }
+
+        public MySqlLuceneOperator MySqlOperator { get; }
 
         public SqlDirectoryOptions Options { get; }
 
-        public SqlDirectory Directory { get; }
+        public LuceneSqlDirectory Directory { get; }
 
         public IndexWriter Writer { get; }
 
@@ -47,14 +55,7 @@ namespace Lucene.Net.Sql.Tests
 
         public IndexSearcher CreateSearcher()
         {
-            return new IndexSearcher(Writer.GetReader(applyAllDeletes: true));
-        }
-
-        private void PurgeTables()
-        {
-            using var sqlOperator = OperatorFactory.Create(Options);
-
-            sqlOperator.Purge();
+            return new IndexSearcher(Writer.GetReader(true));
         }
     }
 

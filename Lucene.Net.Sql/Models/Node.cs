@@ -1,6 +1,6 @@
 ﻿namespace Lucene.Net.Sql.Models
 {
-    internal class Node
+    public class Node
     {
         public long Id { get; set; }
 

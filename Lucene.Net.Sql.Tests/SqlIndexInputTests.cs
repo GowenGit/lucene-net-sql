@@ -1,46 +1,33 @@
-﻿using Lucene.Net.Sql.Models;
-using Lucene.Net.Sql.Operators;
+﻿using System;
+using Lucene.Net.Sql.Models;
 using Moq;
 using Xunit;
 
+// ReSharper disable SuggestBaseTypeForParameter
 namespace Lucene.Net.Sql.Tests
 {
     public class SqlIndexInputTests
     {
         private const string UnitTest = "test";
+        private const long UnitTestId = 0;
+
         private const int UnitTestBlockSize = 3;
 
         private static SqlIndexInput GetSutObject()
         {
-            var sqlOperator = new Mock<IOperator>();
+            var sqlOperator = new Mock<IDatabaseLuceneOperator>();
 
-            sqlOperator
-                .Setup(x => x.GetNode(UnitTest))
-                .Returns(new Node { Size = 10 });
-
-            sqlOperator
-                .Setup(x => x.GetBlock(0, 0))
-                .Returns(new byte[] {1, 1, 1});
-
-            sqlOperator
-                .Setup(x => x.GetBlock(0, 1))
-                .Returns(new byte[] { 2, 2, 2 });
-
-            sqlOperator
-                .Setup(x => x.GetBlock(0, 2))
-                .Returns(new byte[] { 3, 3, 3 });
-
-            sqlOperator
-                .Setup(x => x.GetBlock(0, 3))
-                .Returns(new byte[] { 4, 3, 3 });
+            SetupGetBlock(sqlOperator, 0, new byte[] { 1, 1, 1 });
+            SetupGetBlock(sqlOperator, 1, new byte[] { 2, 2, 2 });
+            SetupGetBlock(sqlOperator, 2, new byte[] { 3, 3, 3 });
+            SetupGetBlock(sqlOperator, 3, new byte[] { 4, 3, 3 });
 
             var options = new SqlDirectoryOptions(
-                    SqlDirectoryEngine.MySql,
                     UnitTest,
                     UnitTest)
-                { BlockSize = UnitTestBlockSize };
+            { BlockSize = UnitTestBlockSize };
 
-            return new SqlIndexInput(options, sqlOperator.Object, UnitTest);
+            return new SqlIndexInput(options, sqlOperator.Object, new Node { Size = 10, Name = UnitTest, Id = UnitTestId });
         }
 
         [Fact]
@@ -67,7 +54,7 @@ namespace Lucene.Net.Sql.Tests
 
             sut.ReadBytes(actual, 0, 10);
 
-            VerifyArray(new byte[] { 1, 1, 1, 2, 2, 2, 3, 3, 3, 4}, actual);
+            VerifyArray(new byte[] { 1, 1, 1, 2, 2, 2, 3, 3, 3, 4 }, actual);
         }
 
         [Fact]
@@ -96,7 +83,17 @@ namespace Lucene.Net.Sql.Tests
             VerifyArray(new byte[] { 2, 2, 2, 3 }, actual);
         }
 
-        private static bool VerifyArray(byte[] expected, byte[] actual)
+        private static void SetupGetBlock(Mock<IDatabaseLuceneOperator> sqlOperator, long block, byte[] array)
+        {
+            sqlOperator
+                .Setup(x => x.GetBlock(UnitTestId, block, It.IsAny<byte[]>(), 0, 0, UnitTestBlockSize))
+                .Callback<long, long, byte[], int, int, int>((id, blockId, buffer, srcOffset, dstOffset, length) =>
+                {
+                    Array.Copy(array, srcOffset, buffer, dstOffset, length);
+                });
+        }
+
+        private static void VerifyArray(byte[] expected, byte[] actual)
         {
             Assert.Equal(expected.Length, actual.Length);
 
@@ -104,8 +101,6 @@ namespace Lucene.Net.Sql.Tests
             {
                 Assert.Equal(expected[i], actual[i]);
             }
-
-            return true;
         }
     }
 }

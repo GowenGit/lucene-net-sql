@@ -17,11 +17,6 @@ namespace Lucene.Net.Sql
         public int BlockSize { get; internal set; } = 16384;
 
         /// <summary>
-        /// Gets SQL engine type.
-        /// </summary>
-        public SqlDirectoryEngine SqlDirectoryEngine { get; }
-
-        /// <summary>
         /// Gets database connection string.
         /// </summary>
         public string ConnectionString { get; }
@@ -37,13 +32,10 @@ namespace Lucene.Net.Sql
         public string TablePrefix { get; }
 
         public SqlDirectoryOptions(
-            SqlDirectoryEngine engineType,
             string connectionString,
             string directoryName,
             string tablePrefix = "lucene_fs")
         {
-            SqlDirectoryEngine = engineType;
-
             ConnectionString = !string.IsNullOrWhiteSpace(connectionString)
                 ? connectionString :
                   throw new ArgumentException("Argument can not be null or empty", nameof(connectionString));
@@ -56,10 +48,5 @@ namespace Lucene.Net.Sql
                 ? tablePrefix :
                 throw new ArgumentException("Argument can not be null or empty", nameof(tablePrefix));
         }
-    }
-
-    public enum SqlDirectoryEngine
-    {
-        MySql
     }
 }

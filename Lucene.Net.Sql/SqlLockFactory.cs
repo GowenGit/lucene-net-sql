@@ -1,18 +1,17 @@
 ﻿using System;
 using Lucene.Net.Sql.Exceptions;
-using Lucene.Net.Sql.Operators;
 using Lucene.Net.Store;
 
 namespace Lucene.Net.Sql
 {
     internal class SqlLockFactory : LockFactory
     {
-        private readonly IOperator _sqlOperator;
+        private readonly IDatabaseLuceneOperator _sqlDatabaseLuceneOperator;
         private readonly SqlDirectoryOptions _options;
 
-        public SqlLockFactory(IOperator sqlOperator, SqlDirectoryOptions options)
+        public SqlLockFactory(IDatabaseLuceneOperator sqlDatabaseLuceneOperator, SqlDirectoryOptions options)
         {
-            _sqlOperator = sqlOperator;
+            _sqlDatabaseLuceneOperator = sqlDatabaseLuceneOperator;
             _options = options;
         }
 
@@ -20,7 +19,7 @@ namespace Lucene.Net.Sql
         {
             lockName = CreateFullLockName(lockName);
 
-            return new SqlLock(_sqlOperator, lockName);
+            return new SqlLock(_sqlDatabaseLuceneOperator, lockName);
         }
 
         public override void ClearLock(string lockName)
@@ -29,7 +28,7 @@ namespace Lucene.Net.Sql
 
             try
             {
-                _sqlOperator.RemoveLock(lockName);
+                _sqlDatabaseLuceneOperator.RemoveLock(lockName);
             }
             catch (Exception ex)
             {
@@ -45,20 +44,20 @@ namespace Lucene.Net.Sql
 
     internal class SqlLock : Lock
     {
-        private readonly IOperator _sqlOperator;
+        private readonly IDatabaseLuceneOperator _sqlDatabaseLuceneOperator;
         private readonly string _lockName;
         private readonly string _lockId;
 
-        public SqlLock(IOperator sqlOperator, string lockName)
+        public SqlLock(IDatabaseLuceneOperator sqlDatabaseLuceneOperator, string lockName)
         {
-            _sqlOperator = sqlOperator;
+            _sqlDatabaseLuceneOperator = sqlDatabaseLuceneOperator;
             _lockName = lockName;
             _lockId = CreateLockId();
         }
 
         public override bool Obtain()
         {
-            var lockId = _sqlOperator.AddLock(_lockName, _lockId);
+            var lockId = _sqlDatabaseLuceneOperator.AddLock(_lockName, _lockId);
 
             if (lockId == _lockId)
             {
@@ -71,7 +70,7 @@ namespace Lucene.Net.Sql
 
         public override bool IsLocked()
         {
-            return _sqlOperator.LockExists(_lockName);
+            return _sqlDatabaseLuceneOperator.LockExists(_lockName);
         }
 
         private static string CreateLockId()
@@ -88,7 +87,7 @@ namespace Lucene.Net.Sql
 
             try
             {
-                _sqlOperator.RemoveLock(_lockName);
+                _sqlDatabaseLuceneOperator.RemoveLock(_lockName);
             }
             catch (Exception ex)
             {

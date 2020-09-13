@@ -1,8 +1,8 @@
-﻿namespace Lucene.Net.Sql.Schema
+﻿namespace Lucene.Net.Sql.MySql
 {
     internal static class MySqlCommands
     {
-        public const string InitializeCommand = @"
+        public const string SetupTablesCommand = @"
 CREATE TABLE IF NOT EXISTS `{0}_data_blocks` (
   `node` bigint(20) NOT NULL,
   `seq` int unsigned NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS `{0}_locks` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ";
 
-        public const string PurgeCommand = @"
+        public const string PurgeTablesCommand = @"
 BEGIN;
 
 DROP TABLE IF EXISTS `{0}_data_blocks`;
@@ -44,19 +44,28 @@ SELECT `name` FROM `{0}_nodes`
 WHERE `directory` = @directory;
 ";
 
-        public const string GetNodeQuery = @"
+        public const string CreateIfNotExistsAndGetNodeQuery = @"
+INSERT IGNORE INTO `{0}_nodes`
+(
+    `name`, `directory`
+)
+VALUES
+(
+    @name, @directory
+);
+
 SELECT
     `node` as `id`,
     `name`,
     `size`
 FROM `{0}_nodes`
-WHERE `name` = @name;
+WHERE `name` = @name AND `directory` = @directory;
 ";
 
         public const string RemoveNodeCommand = @"
 BEGIN;
 
-SELECT `node` INTO @node FROM `{0}_nodes` WHERE `name` = @name;
+SELECT `node` INTO @node FROM `{0}_nodes` WHERE `name` = @name AND `directory` = @directory;
 
 DELETE FROM `{0}_data_blocks` WHERE `node` = @node;
 DELETE FROM `{0}_nodes` WHERE `node` = @node;
@@ -111,17 +120,6 @@ SET `size` = @size
 WHERE `node` = @node_id;
 
 COMMIT;
-";
-
-        public const string CreateNodeCommand = @"
-INSERT IGNORE INTO `{0}_nodes`
-(
-    `name`, `directory`
-)
-VALUES
-(
-    @name, @directory
-);
 ";
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Lucene.Net.Sql.Operators;
 using Lucene.Net.Store;
 
 namespace Lucene.Net.Sql
@@ -10,18 +9,18 @@ namespace Lucene.Net.Sql
     /// to store Lucene index
     /// files inside SQL Database.
     /// </summary>
-    public sealed class SqlDirectory : BaseDirectory
+    public sealed class LuceneSqlDirectory : BaseDirectory
     {
         private readonly SqlDirectoryOptions _options;
 
-        private readonly IOperator _operator;
+        private readonly IDatabaseLuceneOperator _operator;
 
-        public SqlDirectory(SqlDirectoryOptions options)
+        public LuceneSqlDirectory(
+            SqlDirectoryOptions options,
+            IDatabaseLuceneOperator sqlOperator)
         {
             _options = options;
-            _operator = OperatorFactory.Create(options);
-
-            _operator.Initialise();
+            _operator = sqlOperator;
 
             var lockFactory = new SqlLockFactory(_operator, options);
 
@@ -58,17 +57,17 @@ namespace Lucene.Net.Sql
         /// <inheritdoc/>
         public override IndexOutput CreateOutput(string name, IOContext context)
         {
-            _operator.AddNode(name);
+            var node = _operator.GetNode(name);
 
-            return new SqlIndexOutput(_options, _operator, name);
+            return new SqlIndexOutput(_options, _operator, node);
         }
 
         /// <inheritdoc/>
         public override IndexInput OpenInput(string name, IOContext context)
         {
-            _operator.AddNode(name);
+            var node = _operator.GetNode(name);
 
-            return new SqlIndexInput(_options, _operator, name);
+            return new SqlIndexInput(_options, _operator, node);
         }
 
         /// <inheritdoc/>
