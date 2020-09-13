@@ -1,4 +1,6 @@
-﻿using Lucene.Net.Documents;
+﻿using System;
+using System.IO;
+using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Xunit;
@@ -52,7 +54,53 @@ namespace Lucene.Net.Sql.Tests
 
             var searcher = _fixture.CreateSearcher();
 
-            var hits = searcher.Search(phrase, 20).ScoreDocs;
+            var result = searcher.Search(phrase, 20);
+
+            var hits = result.ScoreDocs;
+
+            Assert.NotEmpty(hits);
+        }
+
+        [Fact]
+        public void AddDocument_WhenCalledForLargeDocument_ShouldNotThrow()
+        {
+            var text = File.ReadAllText("Data/data_01.txt");
+
+            var lines = text.Split(
+                new[] { "\r\n", "\r", "\n" },
+                StringSplitOptions.None
+            );
+
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var doc = new Document
+                {
+                    new Int32Field(
+                        "line",
+                        i,
+                        Field.Store.YES),
+                    new TextField(
+                        "text",
+                        lines[i],
+                        Field.Store.YES)
+                };
+
+                _fixture.Writer.AddDocument(doc);
+            }
+
+            _fixture.Writer.Flush(triggerMerge: false, applyAllDeletes: false);
+        }
+
+        [Fact]
+        public void Fetch_WhenCalledForLargeDocument_ShouldReturnSomeHits()
+        {
+            var phrase = new FuzzyQuery(new Term("text", "Mary"));
+
+            var searcher = _fixture.CreateSearcher();
+
+            var result = searcher.Search(phrase, 200);
+
+            var hits = result.ScoreDocs;
 
             Assert.NotEmpty(hits);
         }

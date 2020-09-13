@@ -34,7 +34,7 @@ namespace Lucene.Net.Sql.Tests
             Analyzer.Dispose();
             Directory.Dispose();
 
-            PurgeTables();
+            // PurgeTables();
         }
 
         public SqlDirectoryOptions Options { get; }
