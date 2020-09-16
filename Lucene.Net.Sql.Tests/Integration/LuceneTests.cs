@@ -49,7 +49,7 @@ namespace Lucene.Net.Sql.Tests.Integration
         [Fact, Order(2)]
         public void AddDocument_WhenCalledForLargeDocument_ShouldNotThrow()
         {
-            var text = File.ReadAllText("Data/data_01.txt");
+            var text = File.ReadAllText("Data/data_01");
 
             var lines = text.Split(
                 new[] { "\r\n", "\r", "\n" },

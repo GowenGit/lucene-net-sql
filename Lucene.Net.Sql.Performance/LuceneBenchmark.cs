@@ -83,7 +83,7 @@ namespace Lucene.Net.Sql.Performance
 
         private static void IndexData(IndexWriter writer)
         {
-            var text = File.ReadAllText("Data/data_01.txt");
+            var text = File.ReadAllText("Data/data_01");
 
             var lines = text.Split(
                 new[] { "\r\n", "\r", "\n" },
