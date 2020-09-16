@@ -14,7 +14,7 @@ namespace Lucene.Net.Sql
         /// checks to verify that there are no written
         /// block of old size.
         /// </summary>
-        public int BlockSize { get; internal set; } = 16384;
+        public int BlockSize { get; internal set; } = 8192;
 
         /// <summary>
         /// Gets database connection string.

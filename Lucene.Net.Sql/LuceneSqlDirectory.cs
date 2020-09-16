@@ -83,12 +83,6 @@ namespace Lucene.Net.Sql
         public override void Sync(ICollection<string> names) { }
 
         /// <inheritdoc/>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _operator.Dispose();
-            }
-        }
+        protected override void Dispose(bool disposing) { }
     }
 }

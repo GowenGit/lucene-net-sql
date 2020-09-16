@@ -1,11 +1,10 @@
-﻿using System.Data;
+﻿using System;
 using J2N.Collections.Generic;
 using Lucene.Net.Sql.Exceptions;
 using Lucene.Net.Sql.Models;
 using MySql.Data.MySqlClient;
 
 #pragma warning disable CA2100
-#pragma warning disable CA2213
 
 namespace Lucene.Net.Sql.MySql
 {
@@ -16,46 +15,33 @@ namespace Lucene.Net.Sql.MySql
     public sealed class MySqlLuceneOperator : IDatabaseLuceneOperator
     {
         private readonly SqlDirectoryOptions _options;
+        private readonly MySqlConnection _connection;
 
-        private MySqlLuceneOperator(SqlDirectoryOptions options)
+        private MySqlLuceneOperator(SqlDirectoryOptions options, MySqlConnection connection)
         {
             _options = options;
+            _connection = connection;
         }
 
         public static MySqlLuceneOperator Create(SqlDirectoryOptions options)
         {
-            var sqlOperator = new MySqlLuceneOperator(options);
+            var connection = new MySqlConnection(options.ConnectionString);
 
-            sqlOperator.SetupTables();
-
-            return sqlOperator;
-        }
-
-        private MySqlConnection? _connection;
-
-        /// <summary>
-        /// Gets TODO: more clever connection pooling.
-        /// </summary>
-        private MySqlConnection Connection
-        {
-            get
+            try
             {
-                if (_connection == null)
-                {
-                    _connection = new MySqlConnection(_options.ConnectionString);
+                connection.Open();
 
-                    _connection.Open();
-                }
-                else if (_connection.State == ConnectionState.Closed)
-                {
-                    _connection.Dispose();
+                var sqlOperator = new MySqlLuceneOperator(options, connection);
 
-                    _connection = new MySqlConnection(_options.ConnectionString);
+                sqlOperator.SetupTables();
 
-                    _connection.Open();
-                }
+                return sqlOperator;
+            }
+            catch (Exception ex)
+            {
+                connection.Dispose();
 
-                return _connection;
+                throw new LuceneSqlException("Failed to create MySql Operator", ex);
             }
         }
 
@@ -63,7 +49,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.SetupTablesCommand);
 
-            using var command = new MySqlCommand(sql, Connection);
+            using var command = new MySqlCommand(sql, _connection);
 
             command.ExecuteNonQuery();
         }
@@ -72,7 +58,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.PurgeTablesCommand);
 
-            using var command = new MySqlCommand(sql, Connection);
+            using var command = new MySqlCommand(sql, _connection);
 
             command.ExecuteNonQuery();
         }
@@ -81,7 +67,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.ListNodesQuery);
 
-            using var command = new MySqlCommand(sql, Connection);
+            using var command = new MySqlCommand(sql, _connection);
 
             command.Parameters.AddWithValue("directory", _options.DirectoryName);
 
@@ -101,7 +87,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.CreateIfNotExistsAndGetNodeQuery);
 
-            using var command = new MySqlCommand(sql, Connection);
+            using var command = new MySqlCommand(sql, _connection);
 
             command.Parameters.AddWithValue("name", name);
             command.Parameters.AddWithValue("directory", _options.DirectoryName);
@@ -127,7 +113,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.RemoveNodeCommand);
 
-            using var command = new MySqlCommand(sql, Connection);
+            using var command = new MySqlCommand(sql, _connection);
 
             command.Parameters.AddWithValue("name", name);
             command.Parameters.AddWithValue("directory", _options.DirectoryName);
@@ -139,7 +125,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.AddLockCommand);
 
-            using var command = new MySqlCommand(sql, Connection);
+            using var command = new MySqlCommand(sql, _connection);
 
             command.Parameters.AddWithValue("anchor", lockName);
             command.Parameters.AddWithValue("lock_id", lockId);
@@ -154,7 +140,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.LockExistsQuery);
 
-            using var command = new MySqlCommand(sql, Connection);
+            using var command = new MySqlCommand(sql, _connection);
 
             command.Parameters.AddWithValue("anchor", lockName);
 
@@ -165,7 +151,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.DeleteLockCommand);
 
-            using var command = new MySqlCommand(sql, Connection);
+            using var command = new MySqlCommand(sql, _connection);
 
             command.Parameters.AddWithValue("anchor", lockName);
 
@@ -176,7 +162,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.GetBlockCommand);
 
-            using var command = new MySqlCommand(sql, Connection);
+            using var command = new MySqlCommand(sql, _connection);
 
             command.Parameters.AddWithValue("node_id", nodeId);
             command.Parameters.AddWithValue("block", block);
@@ -197,7 +183,7 @@ namespace Lucene.Net.Sql.MySql
         {
             var sql = GetCommand(MySqlCommands.WriteBlockCommand);
 
-            using var command = new MySqlCommand(sql, Connection);
+            using var command = new MySqlCommand(sql, _connection);
 
             command.Parameters.AddWithValue("node_id", nodeId);
             command.Parameters.AddWithValue("block", block);
@@ -214,7 +200,7 @@ namespace Lucene.Net.Sql.MySql
 
         public void Dispose()
         {
-            _connection?.Dispose();
+            _connection.Dispose();
         }
     }
 }

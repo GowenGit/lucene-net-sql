@@ -9,6 +9,7 @@ namespace Lucene.Net.Sql
     internal class SqlIndexOutput : IndexOutput
     {
         private readonly IDatabaseLuceneOperator _sqlOperator;
+        private readonly Node _node;
         private readonly IChecksum _checksum;
 
         private readonly int _bufferSize;
@@ -36,6 +37,7 @@ namespace Lucene.Net.Sql
             Node node)
         {
             _sqlOperator = sqlOperator;
+            _node = node;
             _checksum = new Checksum();
             _bufferSize = options.BlockSize;
 
@@ -62,6 +64,8 @@ namespace Lucene.Net.Sql
         /// </summary>
         public override void WriteBytes(byte[] b, int offset, int length)
         {
+            DebugLogger.LogWriter($"{this} Writing offset: {offset}, length: {length}");
+
             if (_buffer == null)
             {
                 _buffer = new byte[_bufferSize];
@@ -161,6 +165,11 @@ namespace Lucene.Net.Sql
             }
 
             Flush();
+        }
+
+        public override string ToString()
+        {
+            return $"Node: {_node.Id} [{_node.Name}] [{GetFilePointer()}]";
         }
     }
 }

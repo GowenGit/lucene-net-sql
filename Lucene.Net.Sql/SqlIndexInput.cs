@@ -4,11 +4,8 @@ using Lucene.Net.Sql.Models;
 using Lucene.Net.Store;
 using Directory = Lucene.Net.Store.Directory;
 
-#pragma warning disable CA2000
-
 namespace Lucene.Net.Sql
 {
-    // TODO: Clone buffer
     internal class SqlIndexInput : BufferedIndexInput
     {
         private readonly IDatabaseLuceneOperator _sqlOperator;
@@ -19,7 +16,7 @@ namespace Lucene.Net.Sql
         private readonly long _end;
 
         private readonly int _bufferSize;
-        private readonly byte[] _buffer;
+        private byte[] _buffer;
         private long? _block;
 
         public sealed override long Length => _end - _offset;
@@ -67,6 +64,8 @@ namespace Lucene.Net.Sql
                 return;
             }
 
+            DebugLogger.LogReader($"{this} Fetching block: {block}");
+
             _sqlOperator.GetBlock(_node.Id, block, _buffer, 0, 0, _bufferSize);
 
             _block = block;
@@ -76,12 +75,13 @@ namespace Lucene.Net.Sql
         {
             var position = _offset + GetFilePointer();
 
+            DebugLogger.LogReader($"{this} Reading offset: {offset}, length: {length}, position: {position}, current block: {_block}");
+
             if (position + length > _end)
             {
                 throw new LuceneSqlException($"Read past EOF: {_node.Id}, pos {position}");
             }
 
-            // Iterate all touched blocks.
             for (var i = position / _bufferSize; i <= (position + length) / _bufferSize; i++)
             {
                 FetchBlock(i);
@@ -100,6 +100,27 @@ namespace Lucene.Net.Sql
         protected override void SeekInternal(long pos) { }
 
         protected override void Dispose(bool disposing) { }
+
+        public override object Clone()
+        {
+            DebugLogger.LogReader($"Cloning {this}");
+
+            var clone = (SqlIndexInput)base.Clone();
+
+            var buffer = new byte[_bufferSize];
+
+            Array.Copy(_buffer, buffer, _bufferSize);
+
+            clone._buffer = buffer;
+            clone._block = _block;
+
+            return clone;
+        }
+
+        public override string ToString()
+        {
+            return $"Node: {_node.Id} [{_node.Name}] [{_offset}:{_end}]";
+        }
     }
 
     internal class SqlIndexInputSlicer : Directory.IndexInputSlicer

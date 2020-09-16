@@ -5,6 +5,7 @@ using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
+using Lucene.Net.QueryParsers.Classic;
 using Lucene.Net.Search;
 using Lucene.Net.Sql.MySql;
 using Lucene.Net.Store;
@@ -49,19 +50,35 @@ namespace Lucene.Net.Sql.Performance
         }
 
         [Benchmark]
-        public void IndexAndFetchMySql()
+        public void IndexAndFuzzySearchMySql()
         {
             IndexData(_mySqlWriter);
 
-            FetchData(_mySqlWriter);
+            FuzzySearch(_mySqlWriter);
         }
 
         [Benchmark]
-        public void IndexAndFetchFileSystem()
+        public void IndexAndFuzzySearchFileSystem()
         {
             IndexData(_fileWriter);
 
-            FetchData(_fileWriter);
+            FuzzySearch(_fileWriter);
+        }
+
+        [Benchmark]
+        public void IndexAndQuerySearchMySql()
+        {
+            IndexData(_mySqlWriter);
+
+            QuerySearch(_mySqlWriter);
+        }
+
+        [Benchmark]
+        public void IndexAndQuerySearchFileSystem()
+        {
+            IndexData(_fileWriter);
+
+            QuerySearch(_fileWriter);
         }
 
         private static void IndexData(IndexWriter writer)
@@ -94,13 +111,24 @@ namespace Lucene.Net.Sql.Performance
         }
 
 
-        private static void FetchData(IndexWriter writer)
+        private static void FuzzySearch(IndexWriter writer)
         {
             var phrase = new FuzzyQuery(new Term("text", "Mary"));
 
             var searcher = new IndexSearcher(writer.GetReader(true));
 
             var result = searcher.Search(phrase, 200);
+
+            var _ = result.ScoreDocs;
+        }
+
+        private void QuerySearch(IndexWriter writer)
+        {
+            var parser = new QueryParser(AppLuceneVersion, "text", _analyzer);
+
+            var searcher = new IndexSearcher(writer.GetReader(true));
+
+            var result = searcher.Search(parser.Parse("Mrs. Bennet was quite disconcerted"), 10);
 
             var _ = result.ScoreDocs;
         }
