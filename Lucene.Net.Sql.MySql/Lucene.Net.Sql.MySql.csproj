@@ -24,6 +24,8 @@
 
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
+
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferenceAssets</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,4 +45,10 @@
   <ItemGroup>
     <None Include="../assets/icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
+
+  <Target Name="IncludeReferenceAssets">
+    <ItemGroup>
+      <BuildOutputInPackage Include="$(OutputPath)Lucene.Net.Sql.dll" />
+    </ItemGroup>
+  </Target>
 </Project>

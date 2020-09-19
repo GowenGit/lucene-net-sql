@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Lucene.Net.Sql.MySql\Lucene.Net.Sql.MySql.csproj" />
+    <ProjectReference Include="..\Lucene.Net.Sql\Lucene.Net.Sql.csproj" />
   </ItemGroup>
 
   <ItemGroup>
