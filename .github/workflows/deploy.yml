@@ -27,6 +27,3 @@ jobs:
 
     - name: Deploy NuGet Binaries
       run: dotnet nuget push out/Lucene.Net.Sql.MySql.${{ steps.vars.outputs.tag }}.nupkg -k ${{ secrets.CICD_KEY }} -s https://api.nuget.org/v3/index.json
-
-    - name: Deploy NuGet Symbols
-      run: dotnet nuget push out/Lucene.Net.Sql.MySql.${{ steps.vars.outputs.tag }}.snupkg -k ${{ secrets.CICD_KEY }} -s https://api.nuget.org/v3/index.json

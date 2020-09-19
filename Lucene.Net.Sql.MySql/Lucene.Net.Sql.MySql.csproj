@@ -29,7 +29,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lucene.Net" Version="4.8.0-beta00011" />
+    <PackageReference Include="Lucene.Net" Version="4.8.0-beta00012" />
     <PackageReference Include="MySql.Data" Version="8.0.21" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="Obsessive.Defender" Version="1.0.1">
