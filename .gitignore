@@ -5,3 +5,4 @@ bin/
 obj/
 *.snupkg
 *.user
+out/

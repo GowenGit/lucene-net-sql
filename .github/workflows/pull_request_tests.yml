@@ -1,0 +1,27 @@
+name: PR Testing
+
+on: pull_request
+
+jobs:
+  run-tests:
+    name: Testing
+
+    runs-on: ubuntu-16.04
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: password
+        ports:
+        - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s 
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.101'
+
+    - name: Run dotnet tests
+      run: dotnet test

@@ -7,9 +7,8 @@ namespace Lucene.Net.Sql.Performance
     {
         public static void Main(string[] args)  
         {
-            var _ = BenchmarkRunner.Run<LuceneBenchmark>();
-
-            Console.ReadLine();
+            BenchmarkRunner.Run<LuceneLiteBenchmark>();
+            // BenchmarkRunner.Run<LuceneHeavyBenchmark>();
         }
     }
 }
