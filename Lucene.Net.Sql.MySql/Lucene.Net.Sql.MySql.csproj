@@ -11,8 +11,9 @@
     <Product>Lucene.Net SQL</Product>
     <Title>Lucene.Net SQL</Title>
     <Description>Lucene.NET SQL is a library that enables persistance of Lucene index files to SQL databases.</Description>
-    <Copyright>MIT</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Copyright>GPL-3.0-or-later</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/GowenGit/Lucene-net-sql</PackageProjectUrl>
     <RepositoryUrl>https://github.com/GowenGit/Lucene-net-sql</RepositoryUrl>
     <PackageTags>Lucene; SQL; MySQL; Storage; Directory; MySql</PackageTags>
@@ -49,6 +50,7 @@
   <Target Name="IncludeReferenceAssets">
     <ItemGroup>
       <BuildOutputInPackage Include="$(OutputPath)Lucene.Net.Sql.dll" />
+      <BuildOutputInPackage Include="$(OutputPath)Lucene.Net.Sql.xml" />
     </ItemGroup>
   </Target>
 </Project>
