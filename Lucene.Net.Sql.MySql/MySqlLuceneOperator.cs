@@ -2,7 +2,7 @@
 using J2N.Collections.Generic;
 using Lucene.Net.Sql.Exceptions;
 using Lucene.Net.Sql.Models;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 #pragma warning disable CA2100
 

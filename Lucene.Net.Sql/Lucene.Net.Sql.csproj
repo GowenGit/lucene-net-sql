@@ -4,7 +4,24 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>1701;1702;1591;0649</NoWarn>
 
+    <version>$(VersionSuffix)</version>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <Authors>Modestas Petravicius</Authors>
+    <Product>Lucene.Net SQL</Product>
+    <Title>Lucene.Net SQL</Title>
+    <Description>Lucene.NET SQL is a library that enables persistance of Lucene index files to SQL databases.</Description>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Copyright>GPL-3.0-or-later</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/GowenGit/Lucene-net-sql</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/GowenGit/Lucene-net-sql</RepositoryUrl>
+    <PackageTags>Lucene; SQL; Storage; Directory</PackageTags>
+    <PackageIcon>icon.png</PackageIcon>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
@@ -12,10 +29,14 @@
 
   <ItemGroup>
     <PackageReference Include="Lucene.Net" Version="4.8.0-beta00012" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.0-beta-20204-02" PrivateAssets="All" />
     <PackageReference Include="Obsessive.Defender" Version="1.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../assets/icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>

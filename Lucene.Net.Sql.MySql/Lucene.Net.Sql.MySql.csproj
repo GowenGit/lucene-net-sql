@@ -25,14 +25,12 @@
 
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
-
-    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferenceAssets</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Lucene.Net" Version="4.8.0-beta00012" />
-    <PackageReference Include="MySql.Data" Version="8.0.21" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.0-beta-20204-02" PrivateAssets="All" />
+    <PackageReference Include="MySqlConnector" Version="1.1.0" />
     <PackageReference Include="Obsessive.Defender" Version="1.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -40,17 +38,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference PrivateAssets="all" Include="..\Lucene.Net.Sql\Lucene.Net.Sql.csproj" />
+    <ProjectReference Include="..\Lucene.Net.Sql\Lucene.Net.Sql.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="../assets/icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
-
-  <Target Name="IncludeReferenceAssets">
-    <ItemGroup>
-      <BuildOutputInPackage Include="$(OutputPath)Lucene.Net.Sql.dll" />
-      <BuildOutputInPackage Include="$(OutputPath)Lucene.Net.Sql.xml" />
-    </ItemGroup>
-  </Target>
 </Project>

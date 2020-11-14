@@ -6,7 +6,7 @@ using Lucene.Net.Util;
 
 namespace Lucene.Net.Sql.MySql.Example
 {
-    // dotnet pack -c Release -o out --version-suffix 0.0.3-alpha Lucene.Net.Sql.MySql/Lucene.Net.Sql.MySql.csproj
+    // dotnet pack -c Release -o out --version-suffix 0.0.6-alpha
     public class Program
     {
         public static void Main(string[] args)
