@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00012" />
-    <PackageReference Include="Lucene.Net.Sql.MySql" Version="0.0.6-alpha" />
+    <PackageReference Include="Lucene.Net.Sql.MySql" Version="0.0.10-alpha" />
   </ItemGroup>
 
 </Project>
