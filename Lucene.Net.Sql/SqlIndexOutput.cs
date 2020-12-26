@@ -47,10 +47,7 @@ namespace Lucene.Net.Sql
 
         public override void WriteByte(byte b)
         {
-            if (_buffer == null)
-            {
-                _buffer = new byte[_bufferSize];
-            }
+            _buffer ??= new byte[_bufferSize];
 
             FlushIfFull();
 
@@ -66,10 +63,7 @@ namespace Lucene.Net.Sql
         {
             DebugLogger.LogWriter($"{this} Writing offset: {offset}, length: {length}");
 
-            if (_buffer == null)
-            {
-                _buffer = new byte[_bufferSize];
-            }
+            _buffer ??= new byte[_bufferSize];
 
             // Maybe we want to be more
             // clever here in the future with

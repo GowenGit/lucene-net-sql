@@ -7,8 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00012" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.0-preview-20201020-06" />
-    <PackageReference Include="Moq" Version="4.15.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Include="Moq" Version="4.15.2" />
     <PackageReference Include="Obsessive.Defender" Version="1.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -23,6 +23,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Lucene.Net.Sql.MySql\Lucene.Net.Sql.MySql.csproj" />
+    <ProjectReference Include="..\Lucene.Net.Sql.Postgre\Lucene.Net.Sql.Postgre.csproj" />
+    <ProjectReference Include="..\Lucene.Net.Sql.SqlServer\Lucene.Net.Sql.SqlServer.csproj" />
     <ProjectReference Include="..\Lucene.Net.Sql\Lucene.Net.Sql.csproj" />
   </ItemGroup>
 

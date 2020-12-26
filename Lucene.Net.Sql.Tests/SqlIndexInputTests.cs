@@ -3,6 +3,9 @@ using Lucene.Net.Sql.Models;
 using Moq;
 using Xunit;
 
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
+[assembly: TestCaseOrderer("Xunit.Extensions.Ordering.TestCaseOrderer", "Xunit.Extensions.Ordering")]
+
 // ReSharper disable SuggestBaseTypeForParameter
 namespace Lucene.Net.Sql.Tests
 {

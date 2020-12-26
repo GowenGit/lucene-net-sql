@@ -11,6 +11,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucene.Net.Sql.MySql", "Luc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lucene.Net.Sql.Performance", "Lucene.Net.Sql.Performance\Lucene.Net.Sql.Performance.csproj", "{D7AD39A2-F26F-45A1-8581-0ACB31E55923}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucene.Net.Sql.Postgre", "Lucene.Net.Sql.Postgre\Lucene.Net.Sql.Postgre.csproj", "{7F516A16-7B5C-42BE-A35C-E558B95D4D6B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucene.Net.Sql.SqlServer", "Lucene.Net.Sql.SqlServer\Lucene.Net.Sql.SqlServer.csproj", "{DEB74F58-23DB-4804-AD46-34A8EB6605C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{D7AD39A2-F26F-45A1-8581-0ACB31E55923}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D7AD39A2-F26F-45A1-8581-0ACB31E55923}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D7AD39A2-F26F-45A1-8581-0ACB31E55923}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F516A16-7B5C-42BE-A35C-E558B95D4D6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F516A16-7B5C-42BE-A35C-E558B95D4D6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F516A16-7B5C-42BE-A35C-E558B95D4D6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F516A16-7B5C-42BE-A35C-E558B95D4D6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEB74F58-23DB-4804-AD46-34A8EB6605C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEB74F58-23DB-4804-AD46-34A8EB6605C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEB74F58-23DB-4804-AD46-34A8EB6605C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEB74F58-23DB-4804-AD46-34A8EB6605C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

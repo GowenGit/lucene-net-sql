@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -16,7 +16,7 @@
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/GowenGit/Lucene-net-sql</PackageProjectUrl>
     <RepositoryUrl>https://github.com/GowenGit/Lucene-net-sql</RepositoryUrl>
-    <PackageTags>Lucene; SQL; Storage; Directory</PackageTags>
+    <PackageTags>Lucene; SQL; Storage; Directory; Postgre</PackageTags>
     <PackageIcon>icon.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
@@ -30,10 +30,15 @@
   <ItemGroup>
     <PackageReference Include="Lucene.Net" Version="4.8.0-beta00012" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Npgsql" Version="5.0.1.1" />
     <PackageReference Include="Obsessive.Defender" Version="1.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lucene.Net.Sql\Lucene.Net.Sql.csproj" />
   </ItemGroup>
 
   <ItemGroup>

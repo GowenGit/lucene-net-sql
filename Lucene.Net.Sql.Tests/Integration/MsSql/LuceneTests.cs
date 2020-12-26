@@ -8,9 +8,9 @@ using Xunit.Extensions.Ordering;
 
 #pragma warning disable SA1133
 
-namespace Lucene.Net.Sql.Tests.Integration
+namespace Lucene.Net.Sql.Tests.Integration.MsSql
 {
-    [Collection("Lucene storage collection")]
+    [Collection("MsSQL Lucene storage collection")]
     public class LuceneTests
     {
         private readonly LuceneStorageFixture _fixture;

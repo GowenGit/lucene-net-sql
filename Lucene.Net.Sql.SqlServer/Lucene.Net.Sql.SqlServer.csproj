@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -16,7 +16,7 @@
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/GowenGit/Lucene-net-sql</PackageProjectUrl>
     <RepositoryUrl>https://github.com/GowenGit/Lucene-net-sql</RepositoryUrl>
-    <PackageTags>Lucene; SQL; Storage; Directory</PackageTags>
+    <PackageTags>Lucene; SQL; Storage; Directory; SQL Server</PackageTags>
     <PackageIcon>icon.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
@@ -34,6 +34,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lucene.Net.Sql\Lucene.Net.Sql.csproj" />
   </ItemGroup>
 
   <ItemGroup>

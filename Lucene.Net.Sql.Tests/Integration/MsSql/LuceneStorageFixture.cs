@@ -3,16 +3,13 @@ using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
-using Lucene.Net.Sql.MySql;
+using Lucene.Net.Sql.SqlServer;
 using Lucene.Net.Util;
 using Xunit;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
-[assembly: TestCaseOrderer("Xunit.Extensions.Ordering.TestCaseOrderer", "Xunit.Extensions.Ordering")]
-
 #pragma warning disable CA1711
 
-namespace Lucene.Net.Sql.Tests.Integration
+namespace Lucene.Net.Sql.Tests.Integration.MsSql
 {
     public sealed class LuceneStorageFixture : IDisposable
     {
@@ -24,9 +21,9 @@ namespace Lucene.Net.Sql.Tests.Integration
 
             const LuceneVersion appLuceneVersion = LuceneVersion.LUCENE_48;
 
-            MySqlOperator = MySqlLuceneOperator.Create(Options);
+            SqlServerOperator = SqlServerLuceneOperator.Create(Options);
 
-            Directory = new LuceneSqlDirectory(Options, MySqlOperator);
+            Directory = new LuceneSqlDirectory(Options, SqlServerOperator);
 
             Analyzer = new StandardAnalyzer(appLuceneVersion);
 
@@ -39,11 +36,11 @@ namespace Lucene.Net.Sql.Tests.Integration
             Analyzer.Dispose();
 
             Directory.Dispose();
-            MySqlOperator.PurgeTables();
-            MySqlOperator.Dispose();
+            SqlServerOperator.PurgeTables();
+            SqlServerOperator.Dispose();
         }
 
-        public MySqlLuceneOperator MySqlOperator { get; }
+        public SqlServerLuceneOperator SqlServerOperator { get; }
 
         public SqlDirectoryOptions Options { get; }
 
@@ -59,7 +56,7 @@ namespace Lucene.Net.Sql.Tests.Integration
         }
     }
 
-    [CollectionDefinition("Lucene storage collection")]
+    [CollectionDefinition("MsSQL Lucene storage collection")]
     public class LuceneStorageCollection : ICollectionFixture<LuceneStorageFixture>
     {
         // This class has no code, and is never created. Its purpose is simply
